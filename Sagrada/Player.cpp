@@ -29,6 +29,14 @@ bool Player::boardIsEmpty() {
     return board.isEmpty();
 }
 
+int Player::getTokens() {
+    return favorTokens;
+}
+
+std::string Player::getPrivateObjective() {
+    return privateObjective;
+}
+
 PlayerBoard Player::getBoard() {
     return board;
 }

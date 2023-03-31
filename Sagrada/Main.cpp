@@ -33,11 +33,13 @@ const sf::Color gray(146, 153, 152, 255);
 
 int main();
 
+std::vector<std::vector<bool>> determinePlacementSpots(std::vector<std::vector<Die>> board, Die selectedDie, std::string restrictions);
+
 void fillFrameArray(boost::property_tree::ptree& pt, std::vector<PatternCard>* frameData, int index, int subIndex, int& subSubIndex);
 
 int drawFrame(std::string frameName, std::vector<std::vector<Die>> frameBoard, int frameTokens, sf::RenderWindow* window, int position);
 
-int drawBoard(std::vector<std::vector<Die>> frameBoard, sf::RenderWindow* window, sf::ConvexShape border);
+int drawBoard(std::vector<std::vector<Die>> frameBoard, sf::RenderWindow* window, sf::ConvexShape border, Die selectedDie);
 
 int main() {
 	SCREEN_WIDTH = new int(1120);
@@ -50,6 +52,9 @@ int main() {
 	sf::ContextSettings settings;
 	settings.antialiasingLevel = 8;
 	sf::RenderWindow window(sf::VideoMode(*SCREEN_WIDTH, *SCREEN_HEIGHT), "Sagrada", sf::Style::Default, settings);
+	sf::Image icon;
+	icon.loadFromFile("Icon.png");
+	window.setIcon(icon.getSize().x, icon.getSize().y, icon.getPixelsPtr());
 
 	sf::RectangleShape background(sf::Vector2f(*SCREEN_WIDTH, *SCREEN_HEIGHT));
 	background.setFillColor(gray);
@@ -60,7 +65,7 @@ int main() {
 
 	std::vector<Player> players = { Player(1), Player(2), Player(3), Player(4) };
 	std::vector<std::string> private_colors = {"Blue", "Red", "Green", "Purple", "Yellow"};
-	std::shuffle(std::begin(private_colors), std::end(private_colors), std::default_random_engine());
+	std::shuffle(std::begin(private_colors), std::end(private_colors), std::mt19937(static_cast<uint32_t>(time(0))));
 	for (int i = 0; i < players.size(); i++) {
 		players[i].setPrivateObjective(private_colors[0]);
 		private_colors.erase(private_colors.begin());
@@ -70,9 +75,6 @@ int main() {
 	std::mt19937 mt(rd());
 	std::uniform_real_distribution<double> dist(0.0, 12.0); // 0 to 11
 	std::vector<PatternCard> selectedPatternCards;
-	//std::vector<std::string> selectedFrameNames; // TODO: change to PatternCard
-	//std::vector<std::vector<std::vector<Die>>> selectedFrameBoards(16, std::vector<std::vector<Die>>(4, std::vector<Die>(5)));
-	//std::vector<int> selectedFrameTokens;
 
 	DicePool dicePool;
 	DiceBag diceBag;
@@ -88,9 +90,7 @@ int main() {
 		for (int j = 0; j < 2; j++) {
 			selectedPatternCards.insert(selectedPatternCards.end(), PatternCard());
 			selectedPatternCards.back().setName(windowFrames.get_child(std::to_string(randomNumber)).front().first);
-			//selectedFrameNames.insert(selectedFrameNames.end(), windowFrames.get_child(std::to_string(randomNumber)).front().first);
 			selectedPatternCards.back().setTokens(std::stoi(windowFrames.get_child(std::to_string(randomNumber)).front().second.get<std::string>("Tokens")));
-			//selectedFrameTokens.insert(selectedFrameTokens.end(), std::stoi(windowFrames.get_child(std::to_string(randomNumber)).front().second.get<std::string>("Tokens")));
 			for (int k = 0; k < 4; k++) {
 				boost::property_tree::ptree temp = windowFrames.get_child(std::to_string(randomNumber)).front().second.get_child("Board").begin()->second;
 				int subSubIndex = 0;
@@ -220,8 +220,30 @@ int main() {
 					header.setFillColor(sf::Color::Black);
 					header.setStyle(sf::Text::Bold);
 					header.setOrigin(header.getLocalBounds().width / 2, header.getLocalBounds().height / 2);
-					header.setPosition(*SCREEN_WIDTH / 2, *SCREEN_HEIGHT / 2);
+					header.setPosition(*SCREEN_WIDTH / 2.0, *SCREEN_HEIGHT / 2.0);
 					window.draw(header);
+					sf::RectangleShape privColor;
+					privColor.setSize(sf::Vector2f(*SCREEN_WIDTH / 16.0, *SCREEN_HEIGHT / 8.0));
+					privColor.setOrigin(sf::Vector2f(*SCREEN_WIDTH / 32.0, *SCREEN_HEIGHT / 16.0));
+					privColor.setOutlineThickness(1);
+					privColor.setOutlineColor(sf::Color::Black);
+					privColor.setPosition(*SCREEN_WIDTH / 2.0, *SCREEN_HEIGHT / 1.5);
+					if (players[i].getPrivateObjective() == "Blue") {
+						privColor.setFillColor(sf::Color(45, 187, 200, 255));
+					}
+					else if (players[i].getPrivateObjective() == "Red") {
+						privColor.setFillColor(sf::Color(220, 35, 39, 255));
+					}
+					else if (players[i].getPrivateObjective() == "Green") {
+						privColor.setFillColor(sf::Color(3, 171, 108, 255));
+					}
+					else if (players[i].getPrivateObjective() == "Purple") {
+						privColor.setFillColor(sf::Color(165, 65, 152, 255));
+					}
+					else if (players[i].getPrivateObjective() == "Yellow") {
+						privColor.setFillColor(sf::Color(243, 222, 12, 255));
+					}
+					window.draw(privColor);
 					if (selected != 0) {
 						players[i].setFrame(selectedPatternCards[i * 4 + selected - 1].getDice());
 						players[i].setTokens(selectedPatternCards[i * 4 + selected - 1].getTokens());
@@ -263,8 +285,43 @@ int main() {
 				boardOutline = RoundedRectangle(*SCREEN_WIDTH - margin - boardWidth, 0 + margin,
 					boardWidth, boardHeight, 10, darkGray, 2, sf::Color::Black);
 				window.draw(boardOutline);
-				drawBoard(players[currentPlayer].getBoard().getDice(), &window, boardOutline);
+				drawBoard(players[currentPlayer - 1].getBoard().getDice(), &window, boardOutline, Die());
+				sf::RectangleShape privObj;
+				if (players[currentPlayer - 1].getPrivateObjective() == "Blue") {
+					privObj.setFillColor(sf::Color(45, 187, 200, 255));
+				}
+				else if (players[currentPlayer - 1].getPrivateObjective() == "Red") {
+					privObj.setFillColor(sf::Color(220, 35, 39, 255));
+				}
+				else if (players[currentPlayer - 1].getPrivateObjective() == "Green") {
+					privObj.setFillColor(sf::Color(3, 171, 108, 255));
+				}
+				else if (players[currentPlayer - 1].getPrivateObjective() == "Purple") {
+					privObj.setFillColor(sf::Color(165, 65, 152, 255));
+				}
+				else if (players[currentPlayer - 1].getPrivateObjective() == "Yellow") {
+					privObj.setFillColor(sf::Color(243, 222, 12, 255));
+				}
+				privObj.setSize(sf::Vector2f(boardWidth / 1.5, boardWidth / 9.0));
+				privObj.setPosition(*SCREEN_WIDTH - margin * 1.7 - boardWidth / 1.5, 0 - margin * 2.75 + boardHeight);
+				privObj.setOutlineThickness(1);
+				privObj.setOutlineColor(sf::Color::Black);
+				window.draw(privObj);
+				sf::Text tokenCount;
+				tokenCount.setString(std::to_string(players[currentPlayer - 1].getTokens()) + "T");
+				tokenCount.setFont(font);
+				tokenCount.setStyle(sf::Text::Bold);
+				tokenCount.setFillColor(sf::Color::Black);
+				tokenCount.setCharacterSize(40.0 * ((double)*SCREEN_WIDTH / (double)DEFAULT_SCREEN_WIDTH));
+				tokenCount.setPosition(*SCREEN_WIDTH + margin - boardWidth, 0 - margin * 2.8 + boardHeight);
+				window.draw(tokenCount);
 				// draw token count and private objective in bottom of the board outline
+				// objective + tool cards are 63x88
+				sf::ConvexShape objectiveCards[3];
+				float objectiveCardWidth = 63.0 * ((double)*SCREEN_WIDTH / (double)DEFAULT_SCREEN_WIDTH);
+				float objectiveCardHeight = 88.0 * ((double)*SCREEN_WIDTH / (double)DEFAULT_SCREEN_WIDTH);
+				objectiveCards[0] = RoundedRectangle(0, 0, objectiveCardWidth, objectiveCardHeight, 10, darkGray, 2, sf::Color::Black);
+				window.draw(objectiveCards[0]);
 			}
 			// until max playercount is reached, then set back to 1 and increment currentTurn by 1
 		}
@@ -278,17 +335,23 @@ int main() {
 // Value = Ignore value restrictions(Copper Foil Burnisher)
 // Color = Ignore color restrictions(Eglomise Brush)
 // Adjacent = Ignore adjacency restrictions(Cork-backed Straightedge)
-int determine_placement_spots(PlayerBoard board, std::string die, std::string placement_restrictions) {
-	std::string word;
-	int number;
-	std::stringstream(die) >> word >> number;
-	bool placement_spots[4][5] = { 
-		{true, true, true, true, true}, 
-		{true, true, true, true, true}, 
-		{true, true, true, true, true}, 
-		{true, true, true, true, true} 
+std::vector<std::vector<bool>> determinePlacementSpots(std::vector<std::vector<Die>> board, Die selectedDie, std::string restrictions) {
+	std::vector<std::vector<bool>> placementSpots = {
+		{true, true, true, true, true},
+		{true, true, true, true, true},
+		{true, true, true, true, true},
+		{true, true, true, true, true}
 	};
-    return 0;
+	if (selectedDie.getNumber() == 0) {
+		return {
+		{false, false, false, false, false},
+		{false, false, false, false, false},
+		{false, false, false, false, false},
+		{false, false, false, false, false}
+		};
+	}
+	// do checks
+	return placementSpots;
 }
 
 void fillFrameArray(boost::property_tree::ptree& pt, std::vector<PatternCard>* frameData, int index, int subIndex, int& subSubIndex) {
@@ -370,11 +433,12 @@ int drawFrame(std::string frameName, std::vector<std::vector<Die>> frameBoard, i
 	window->draw(rectBorder);
 	window->draw(frameNameText);
 	window->draw(frameTokensText);
-	drawBoard(frameBoard, window, rectBorder);
+	drawBoard(frameBoard, window, rectBorder, Die());
 	return 0;
 }
 
-int drawBoard(std::vector<std::vector<Die>> frameBoard, sf::RenderWindow* window, sf::ConvexShape border) {
+int drawBoard(std::vector<std::vector<Die>> frameBoard, sf::RenderWindow* window, sf::ConvexShape border, Die selectedDie) {
+	std::vector<std::vector<bool>> clickable = determinePlacementSpots(frameBoard, selectedDie, "None");
 	float squareSize = border.getGlobalBounds().height / ((frameBoard.size() + 1.0) * 1.25);
 	sf::RectangleShape square(sf::Vector2f(squareSize, squareSize));
 	double startX = border.getGlobalBounds().left + *SCREEN_WIDTH / margin * 2.5;
@@ -410,6 +474,9 @@ int drawBoard(std::vector<std::vector<Die>> frameBoard, sf::RenderWindow* window
 			float dotMargin = square.getSize().x / 18.f;
 			if (frameBoard[i][j].getNumber() != 0 && frameBoard[i][j].getColor() == "") {
 				square.setFillColor(sf::Color(74, 79, 78, 255));
+			}
+			if (clickable[i][j] == true) {
+				square.setOutlineColor(sf::Color::Yellow);
 			}
 			window->draw(square);
 			if ((std::set<int> {2, 4, 5, 6}).count(frameBoard[i][j].getNumber()) > 0) { // top-left and bottom-right

@@ -78,5 +78,13 @@
     <Image Include="SagradaLogo.png">
       <Filter>Resource Files</Filter>
     </Image>
+    <Image Include="Icon.png">
+      <Filter>Resource Files</Filter>
+    </Image>
+  </ItemGroup>
+  <ItemGroup>
+    <Font Include="arial.ttf">
+      <Filter>Resource Files</Filter>
+    </Font>
   </ItemGroup>
 </Project>
