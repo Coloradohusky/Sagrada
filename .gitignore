@@ -363,10 +363,8 @@ MigrationBackup/
 FodyWeavers.xsd
 
 ## Extra
-libboost_wave-vc143-mt-gd-x64-1_81.lib
-libboost_log-vc143-mt-gd-x32-1_81.lib
-libboost_log-vc143-mt-gd-x64-1_81.lib
-libboost_log_setup-vc143-mt-gd-x32-1_81.lib
-libboost_log_setup-vc143-mt-gd-x64-1_81.lib
-libboost_wave-vc143-mt-gd-x32-1_81.lib
 !Boost/boost/preprocessor/debug/
+Boost/doc/
+Boost/lib/
+SFML/doc/
+SFML/examples/
