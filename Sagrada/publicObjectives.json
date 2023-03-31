@@ -1,0 +1,57 @@
+{
+  "0": {
+    "Name": "Light Shades",
+    "Description": "Sets of 1 & 2 values anywhere",
+    "Points": 2
+  },
+  "1": {
+    "Name": "Medium Shades",
+    "Description": "Sets of 3 & 4 values anywhere",
+    "Points": 2
+  },
+  "2": {
+    "Name": "Deep Shades",
+    "Description": "Sets of 5 & 6 values anywhere",
+    "Points": 2
+  },
+  "3": {
+    "Name": "Column Shade Variety",
+    "Description": "Columns with no repeated values",
+    "Points": 4
+  },
+  "4": {
+    "Name": "Column Color Variety",
+    "Description": "Columns with no repeated colors",
+    "Points": 5
+  },
+  "5": {
+    "Name": "Row Shade Variety",
+    "Description": "Rows with no repeated values",
+    "Points": 5
+  },
+  "6": {
+    "Name": "Row Color Variety",
+    "Description": "Rows with no repeated colors",
+    "Points": 6
+  },
+  "7": {
+    "Name": "Shade Variety",
+    "Description": "Sets of one of each value anywhere",
+    "Points": 5
+  },
+  "8": {
+    "Name": "Color Variety",
+    "Description": "Sets of one of each color anywhere",
+    "Points": 4
+  },
+  "9": {
+    "Name": "Color Diagonals",
+    "Description": "Count of diagonally adjacent same-color dice",
+    "Points": "#"
+  },
+  "Blank": {
+    "Name": "Blank",
+    "Description": "Blank",
+    "Points": 2
+  }
+}
