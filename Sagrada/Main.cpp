@@ -30,6 +30,7 @@ const int sleepTime = 200;
 const double margin = 80.0;
 const sf::Color darkGray(145, 150, 150, 255);
 const sf::Color gray(146, 153, 152, 255);
+const sf::Color beige(253, 217, 150, 255);
 
 int main();
 
@@ -51,7 +52,7 @@ int main() {
 
 	sf::ContextSettings settings;
 	settings.antialiasingLevel = 8;
-	sf::RenderWindow window(sf::VideoMode(*SCREEN_WIDTH, *SCREEN_HEIGHT), "Sagrada", sf::Style::Default, settings);
+	sf::RenderWindow window(sf::VideoMode(*SCREEN_WIDTH, *SCREEN_HEIGHT), " Sagrada", sf::Style::Default, settings);
 	sf::Image icon;
 	icon.loadFromFile("Icon.png");
 	window.setIcon(icon.getSize().x, icon.getSize().y, icon.getPixelsPtr());
@@ -62,6 +63,14 @@ int main() {
 	boost::property_tree::ptree windowFrames;
 	read_json("windowFrames.json", windowFrames);
 	windowFrames.erase("Blank");
+
+	boost::property_tree::ptree publicObjectives;
+	read_json("publicObjectives.json", publicObjectives);
+	publicObjectives.erase("Blank");
+
+	boost::property_tree::ptree toolCards;
+	read_json("toolCards.json", toolCards);
+	toolCards.erase("Blank");
 
 	std::vector<Player> players = { Player(1), Player(2), Player(3), Player(4) };
 	std::vector<std::string> private_colors = {"Blue", "Red", "Green", "Purple", "Yellow"};
@@ -258,7 +267,7 @@ int main() {
 		}
 		else {
 			if (dicePool.isEmpty()) {
-				dicePool.roll(diceBag, playerCount);
+				dicePool.roll(&diceBag, playerCount);
 			}
 			int currentPlayerIsDone = 0;
 			if (currentPlayerIsDone == 1) {
@@ -318,10 +327,34 @@ int main() {
 				// draw token count and private objective in bottom of the board outline
 				// objective + tool cards are 63x88
 				sf::ConvexShape objectiveCards[3];
-				float objectiveCardWidth = 63.0 * ((double)*SCREEN_WIDTH / (double)DEFAULT_SCREEN_WIDTH);
-				float objectiveCardHeight = 88.0 * ((double)*SCREEN_WIDTH / (double)DEFAULT_SCREEN_WIDTH);
-				objectiveCards[0] = RoundedRectangle(0, 0, objectiveCardWidth, objectiveCardHeight, 10, darkGray, 2, sf::Color::Black);
+				float objectiveCardWidth = 63.0 * 2.05 * ((double)*SCREEN_WIDTH / (double)DEFAULT_SCREEN_WIDTH);
+				float objectiveCardHeight = 88.0 * 2.05 * ((double)*SCREEN_WIDTH / (double)DEFAULT_SCREEN_WIDTH);
+				objectiveCards[0] = RoundedRectangle(*SCREEN_WIDTH - 2 * margin - boardWidth - objectiveCardWidth, 0 + margin, objectiveCardWidth, objectiveCardHeight, 10, darkGray, 5, sf::Color::Black);
+				objectiveCards[1] = RoundedRectangle(*SCREEN_WIDTH - 2 * margin - boardWidth - objectiveCardWidth, 0 + 2 * margin + objectiveCardHeight, objectiveCardWidth, objectiveCardHeight, 10, darkGray, 5, sf::Color::Black);
+				objectiveCards[2] = RoundedRectangle(*SCREEN_WIDTH - 2 * margin - boardWidth - objectiveCardWidth, 0 + 3 * margin + 2 * objectiveCardHeight, objectiveCardWidth, objectiveCardHeight, 10, darkGray, 5, sf::Color::Black);
+				sf::ConvexShape toolCards[3];
+				toolCards[0] = RoundedRectangle(*SCREEN_WIDTH - 3 * margin - boardWidth - 2 * objectiveCardWidth, 0 + margin, objectiveCardWidth, objectiveCardHeight, 10, beige, 5, sf::Color::Black);
+				toolCards[1] = RoundedRectangle(*SCREEN_WIDTH - 3 * margin - boardWidth - 2 * objectiveCardWidth, 0 + 2 * margin + objectiveCardHeight, objectiveCardWidth, objectiveCardHeight, 10, beige, 5, sf::Color::Black);
+				toolCards[2] = RoundedRectangle(*SCREEN_WIDTH - 3 * margin - boardWidth - 2 * objectiveCardWidth, 0 + 3 * margin + 2 * objectiveCardHeight, objectiveCardWidth, objectiveCardHeight, 10, beige, 5, sf::Color::Black);
 				window.draw(objectiveCards[0]);
+				window.draw(objectiveCards[1]);
+				window.draw(objectiveCards[2]);
+				window.draw(toolCards[0]);
+				window.draw(toolCards[1]);
+				window.draw(toolCards[2]);
+				sf::ConvexShape draftPool;
+				float draftPoolWidth = 300.0 * ((double)*SCREEN_WIDTH / (double)DEFAULT_SCREEN_WIDTH);
+				float draftPoolHeight = 583.0 * ((double)*SCREEN_WIDTH / (double)DEFAULT_SCREEN_WIDTH);
+				draftPool = RoundedRectangle(0 + margin, 0 + margin, draftPoolWidth, draftPoolHeight, 10, darkGray, 2, sf::Color::Black);
+				//window.draw(draftPool);
+				std::vector<sf::ConvexShape> dicePoolShapes;
+				for (int d = 0; d < dicePool.size(); d++) {
+					if (dicePoolShapes.size() != dicePool.size()) {
+						float diceSize = 100.0 * ((double)*SCREEN_WIDTH / (double)DEFAULT_SCREEN_WIDTH);
+						dicePoolShapes.push_back(RoundedRectangle(0 + margin + d * 6.0, 0 + margin + d * 6.0, diceSize, diceSize, 10, dicePool.getDieColor(d), 2, sf::Color::Black));
+					}
+					window.draw(dicePoolShapes[d]);
+				}
 			}
 			// until max playercount is reached, then set back to 1 and increment currentTurn by 1
 		}
@@ -332,9 +365,9 @@ int main() {
 
 // placement_restrictions are the placement restrictions that should be ignored
 // Normal = Obey all
-// Value = Ignore value restrictions(Copper Foil Burnisher)
-// Color = Ignore color restrictions(Eglomise Brush)
-// Adjacent = Ignore adjacency restrictions(Cork-backed Straightedge)
+// Value = Ignore value restrictions (Copper Foil Burnisher)
+// Color = Ignore color restrictions (Eglomise Brush)
+// Adjacent = Ignore adjacency restrictions (Cork-backed Straightedge)
 std::vector<std::vector<bool>> determinePlacementSpots(std::vector<std::vector<Die>> board, Die selectedDie, std::string restrictions) {
 	std::vector<std::vector<bool>> placementSpots = {
 		{true, true, true, true, true},
