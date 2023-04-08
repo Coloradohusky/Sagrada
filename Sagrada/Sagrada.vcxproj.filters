@@ -36,7 +36,7 @@
     <ClCompile Include="RoundTrack.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="CustomShapes.cpp">
+    <ClCompile Include="Custom.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="PatternCard.cpp">
@@ -62,7 +62,7 @@
     <ClInclude Include="RoundTrack.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="CustomShapes.hpp">
+    <ClInclude Include="Custom.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="PatternCard.hpp">

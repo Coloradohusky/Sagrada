@@ -134,7 +134,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="CustomShapes.cpp" />
+    <ClCompile Include="Custom.cpp" />
     <ClCompile Include="DiceBag.cpp" />
     <ClCompile Include="DicePool.cpp" />
     <ClCompile Include="Die.cpp" />
@@ -146,7 +146,7 @@
     <ClCompile Include="RoundTrack.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="CustomShapes.hpp" />
+    <ClInclude Include="Custom.hpp" />
     <ClInclude Include="DiceBag.hpp" />
     <ClInclude Include="DicePool.hpp" />
     <ClInclude Include="Die.hpp" />

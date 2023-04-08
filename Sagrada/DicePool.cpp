@@ -15,7 +15,7 @@ int DicePool::size() {
 sf::Color DicePool::getDieColor(int index)
 {
 	if (draftPool[index].getColor() == "Blue") {
-		return sf::Color(45, 187, 200, 255);
+		return sf::Color(45, 187, 200, 255); // TODO: include Custom.hpp for global colors (will that work?)
 	}
 	else if (draftPool[index].getColor() == "Red") {
 		return sf::Color(220, 35, 39, 255);
