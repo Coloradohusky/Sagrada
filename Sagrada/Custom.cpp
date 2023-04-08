@@ -164,68 +164,135 @@ int drawBoard(std::vector<std::vector<Die>> frameBoard, sf::RenderWindow* window
 	double newY = startY;
 	for (int i = 0; i < frameBoard.size(); i++) {
 		for (int j = 0; j < frameBoard[0].size(); j++) { // TODO: Turn into separate function (drawDie)
-			sf::RectangleShape square(sf::Vector2f(squareSize, squareSize));
-			square.setPosition(startX + (squareSize + SCREEN_WIDTH / margin) * j, startY + (squareSize + SCREEN_HEIGHT / margin) * i);
-			square.setOutlineColor(sf::Color(99, 105, 104, 255));
-			square.setOutlineThickness(2);
-			square.setFillColor(sf::Color(202, 206, 205, 255)); // TODO: Make global colors (add to Custom.hpp/cpp?)
-			// Set fill color, draw dots
-			if (frameBoard[i][j].getColor() == "Blue") {
-				square.setFillColor(sf::Color(45, 187, 200, 255));
-			}
-			else if (frameBoard[i][j].getColor() == "Red") {
-				square.setFillColor(sf::Color(220, 35, 39, 255));
-			}
-			else if (frameBoard[i][j].getColor() == "Green") {
-				square.setFillColor(sf::Color(3, 171, 108, 255)); // (these too)
-			}
-			else if (frameBoard[i][j].getColor() == "Purple") {
-				square.setFillColor(sf::Color(165, 65, 152, 255));
-			}
-			else if (frameBoard[i][j].getColor() == "Yellow") {
-				square.setFillColor(sf::Color(243, 222, 12, 255));
-			}
-			sf::CircleShape dotCircle;
-			dotCircle.setRadius(square.getGlobalBounds().height / 10.0);
-			dotCircle.setFillColor(sf::Color::Black);
-			float dotMargin = square.getSize().x / 18.f;
-			if (frameBoard[i][j].getNumber() != 0 && frameBoard[i][j].getColor() == "") {
-				square.setFillColor(sf::Color(74, 79, 78, 255));
-			}
-			if (clickable[i][j] == true) {
-				square.setOutlineColor(sf::Color::Yellow);
-			}
-			window->draw(square);
-			if ((std::set<int> {2, 4, 5, 6}).count(frameBoard[i][j].getNumber()) > 0) { // top-left and bottom-right
-				dotCircle.setPosition(square.getPosition().x + dotMargin,
-					square.getPosition().y + dotMargin);
-				window->draw(dotCircle); // top-left
-				dotCircle.setPosition(square.getPosition().x + square.getSize().x - dotCircle.getRadius() * 2.0 - dotMargin,
-					square.getPosition().y + square.getSize().y - dotCircle.getRadius() * 2.0 - dotMargin);
-				window->draw(dotCircle); // bottom-right
-			}
-			if ((std::set<int> {1, 3, 5}).count(frameBoard[i][j].getNumber()) > 0) { // center
-				dotCircle.setPosition(square.getPosition().x + (square.getSize().x - dotCircle.getRadius() * 2.0) / 2.f,
-					square.getPosition().y + (square.getSize().y - dotCircle.getRadius() * 2.0) / 2.f);
-				window->draw(dotCircle); // center
-			}
-			if ((std::set<int> {3, 4, 5, 6}).count(frameBoard[i][j].getNumber()) > 0) { // top-right and bottom-left
-				dotCircle.setPosition(square.getPosition().x + square.getSize().x - dotCircle.getRadius() * 2.0 - dotMargin,
-					square.getPosition().y + dotMargin);
-				window->draw(dotCircle); // top-right
-				dotCircle.setPosition(square.getPosition().x + dotMargin,
-					square.getPosition().y + square.getSize().y - dotCircle.getRadius() * 2.0 - dotMargin);
-				window->draw(dotCircle); // bottom-left
-			}
-			if ((std::set<int> {6}).count(frameBoard[i][j].getNumber()) > 0) { // middle-left and middle-right
-				dotCircle.setPosition(square.getPosition().x + dotMargin,
-					square.getPosition().y + (square.getSize().y - dotCircle.getRadius() * 2.0) / 2.f);
-				window->draw(dotCircle); // middle-left
-				dotCircle.setPosition(square.getPosition().x + square.getSize().x - dotCircle.getRadius() * 2.0 - dotMargin,
-					square.getPosition().y + (square.getSize().y - dotCircle.getRadius() * 2.0) / 2.f);
-				window->draw(dotCircle); // middle-right
-			}
+			drawDie(frameBoard[i][j], squareSize, startX + (squareSize + SCREEN_WIDTH / margin) * j, 
+				startY + (squareSize + SCREEN_HEIGHT / margin) * i, clickable[i][j], window);
+			//sf::RectangleShape square(sf::Vector2f(squareSize, squareSize));
+			//square.setPosition(, );
+			//square.setOutlineColor(mediumGray);
+			//square.setOutlineThickness(2);
+			//square.setFillColor(lightGray); // TODO: Make global colors (add to Custom.hpp/cpp?)
+			//// Set fill color, draw dots
+			//if (frameBoard[i][j].getColor() == "Blue") {
+			//	square.setFillColor(blue);
+			//}
+			//else if (frameBoard[i][j].getColor() == "Red") {
+			//	square.setFillColor(red);
+			//}
+			//else if (frameBoard[i][j].getColor() == "Green") {
+			//	square.setFillColor(green); // (these too)
+			//}
+			//else if (frameBoard[i][j].getColor() == "Purple") {
+			//	square.setFillColor(purple);
+			//}
+			//else if (frameBoard[i][j].getColor() == "Yellow") {
+			//	square.setFillColor(yellow);
+			//}
+			//sf::CircleShape dotCircle;
+			//dotCircle.setRadius(square.getGlobalBounds().height / 10.0);
+			//dotCircle.setFillColor(sf::Color::Black);
+			//float dotMargin = square.getSize().x / 18.f;
+			//if (frameBoard[i][j].getNumber() != 0 && frameBoard[i][j].getColor() == "") {
+			//	square.setFillColor(sf::Color(74, 79, 78, 255));
+			//}
+			//if (clickable[i][j] == true) {
+			//	square.setOutlineColor(sf::Color::Yellow);
+			//}
+			//window->draw(square);
+			//if ((std::set<int> {2, 4, 5, 6}).count(frameBoard[i][j].getNumber()) > 0) { // top-left and bottom-right
+			//	dotCircle.setPosition(square.getPosition().x + dotMargin,
+			//		square.getPosition().y + dotMargin);
+			//	window->draw(dotCircle); // top-left
+			//	dotCircle.setPosition(square.getPosition().x + square.getSize().x - dotCircle.getRadius() * 2.0 - dotMargin,
+			//		square.getPosition().y + square.getSize().y - dotCircle.getRadius() * 2.0 - dotMargin);
+			//	window->draw(dotCircle); // bottom-right
+			//}
+			//if ((std::set<int> {1, 3, 5}).count(frameBoard[i][j].getNumber()) > 0) { // center
+			//	dotCircle.setPosition(square.getPosition().x + (square.getSize().x - dotCircle.getRadius() * 2.0) / 2.f,
+			//		square.getPosition().y + (square.getSize().y - dotCircle.getRadius() * 2.0) / 2.f);
+			//	window->draw(dotCircle); // center
+			//}
+			//if ((std::set<int> {3, 4, 5, 6}).count(frameBoard[i][j].getNumber()) > 0) { // top-right and bottom-left
+			//	dotCircle.setPosition(square.getPosition().x + square.getSize().x - dotCircle.getRadius() * 2.0 - dotMargin,
+			//		square.getPosition().y + dotMargin);
+			//	window->draw(dotCircle); // top-right
+			//	dotCircle.setPosition(square.getPosition().x + dotMargin,
+			//		square.getPosition().y + square.getSize().y - dotCircle.getRadius() * 2.0 - dotMargin);
+			//	window->draw(dotCircle); // bottom-left
+			//}
+			//if ((std::set<int> {6}).count(frameBoard[i][j].getNumber()) > 0) { // middle-left and middle-right
+			//	dotCircle.setPosition(square.getPosition().x + dotMargin,
+			//		square.getPosition().y + (square.getSize().y - dotCircle.getRadius() * 2.0) / 2.f);
+			//	window->draw(dotCircle); // middle-left
+			//	dotCircle.setPosition(square.getPosition().x + square.getSize().x - dotCircle.getRadius() * 2.0 - dotMargin,
+			//		square.getPosition().y + (square.getSize().y - dotCircle.getRadius() * 2.0) / 2.f);
+			//	window->draw(dotCircle); // middle-right
+			//}
 		}
 	}
 	return 0;
+}
+
+sf::RectangleShape drawDie(Die selectedDie, float size, float x, float y, bool isClickable, sf::RenderWindow* window) {
+	sf::RectangleShape square(sf::Vector2f(size, size));
+	square.setPosition(x, y);
+	square.setOutlineColor(mediumGray);
+	square.setOutlineThickness(2);
+	square.setFillColor(lightGray); // TODO: Make global colors (add to Custom.hpp/cpp?)
+	// Set fill color, draw dots
+	if (selectedDie.getColor() == "Blue") {
+		square.setFillColor(blue);
+	}
+	else if (selectedDie.getColor() == "Red") {
+		square.setFillColor(red);
+	}
+	else if (selectedDie.getColor() == "Green") {
+		square.setFillColor(green);
+	}
+	else if (selectedDie.getColor() == "Purple") {
+		square.setFillColor(purple);
+	}
+	else if (selectedDie.getColor() == "Yellow") {
+		square.setFillColor(yellow);
+	}
+	sf::CircleShape dotCircle;
+	dotCircle.setRadius(square.getGlobalBounds().height / 10.0);
+	dotCircle.setFillColor(sf::Color::Black);
+	float dotMargin = square.getSize().x / 18.f;
+	if (selectedDie.getNumber() != 0 && selectedDie.getColor() == "") {
+		square.setFillColor(sf::Color(74, 79, 78, 255));
+	}
+	if (isClickable) {
+		square.setOutlineColor(sf::Color::Yellow);
+	}
+	window->draw(square);
+	if ((std::set<int> {2, 4, 5, 6}).count(selectedDie.getNumber()) > 0) { // top-left and bottom-right
+		dotCircle.setPosition(square.getPosition().x + dotMargin,
+			square.getPosition().y + dotMargin);
+		window->draw(dotCircle); // top-left
+		dotCircle.setPosition(square.getPosition().x + square.getSize().x - dotCircle.getRadius() * 2.0 - dotMargin,
+			square.getPosition().y + square.getSize().y - dotCircle.getRadius() * 2.0 - dotMargin);
+		window->draw(dotCircle); // bottom-right
+	}
+	if ((std::set<int> {1, 3, 5}).count(selectedDie.getNumber()) > 0) { // center
+		dotCircle.setPosition(square.getPosition().x + (square.getSize().x - dotCircle.getRadius() * 2.0) / 2.f,
+			square.getPosition().y + (square.getSize().y - dotCircle.getRadius() * 2.0) / 2.f);
+		window->draw(dotCircle); // center
+	}
+	if ((std::set<int> {3, 4, 5, 6}).count(selectedDie.getNumber()) > 0) { // top-right and bottom-left
+		dotCircle.setPosition(square.getPosition().x + square.getSize().x - dotCircle.getRadius() * 2.0 - dotMargin,
+			square.getPosition().y + dotMargin);
+		window->draw(dotCircle); // top-right
+		dotCircle.setPosition(square.getPosition().x + dotMargin,
+			square.getPosition().y + square.getSize().y - dotCircle.getRadius() * 2.0 - dotMargin);
+		window->draw(dotCircle); // bottom-left
+	}
+	if ((std::set<int> {6}).count(selectedDie.getNumber()) > 0) { // middle-left and middle-right
+		dotCircle.setPosition(square.getPosition().x + dotMargin,
+			square.getPosition().y + (square.getSize().y - dotCircle.getRadius() * 2.0) / 2.f);
+		window->draw(dotCircle); // middle-left
+		dotCircle.setPosition(square.getPosition().x + square.getSize().x - dotCircle.getRadius() * 2.0 - dotMargin,
+			square.getPosition().y + (square.getSize().y - dotCircle.getRadius() * 2.0) / 2.f);
+		window->draw(dotCircle); // middle-right
+	}
+	return square;
 }

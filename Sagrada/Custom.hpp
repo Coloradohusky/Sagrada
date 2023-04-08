@@ -17,6 +17,13 @@ const double margin = 80.0;
 const sf::Color darkGray(145, 150, 150, 255);
 const sf::Color gray(146, 153, 152, 255);
 const sf::Color beige(253, 217, 150, 255);
+const sf::Color blue(45, 187, 200, 255);
+const sf::Color red(220, 35, 39, 255);
+const sf::Color green(3, 171, 108, 255);
+const sf::Color purple(165, 65, 152, 255);
+const sf::Color yellow(243, 222, 12, 255);
+const sf::Color lightGray(202, 206, 205, 255);
+const sf::Color mediumGray(99, 105, 104, 255);
 
 sf::ConvexShape RoundedRectangle(float x, float y, float rectWidth, float rectHeight, float radius, const sf::Color& shapeColor, float outline = 0.f, const sf::Color& outlineCol = sf::Color(0, 0, 0));
 
@@ -29,3 +36,5 @@ void fillFrameArray(boost::property_tree::ptree& pt, std::vector<PatternCard>* f
 int drawFrame(std::string frameName, std::vector<std::vector<Die>> frameBoard, int frameTokens, sf::RenderWindow* window, int position);
 
 int drawBoard(std::vector<std::vector<Die>> frameBoard, sf::RenderWindow* window, sf::ConvexShape border, Die selectedDie);
+
+sf::RectangleShape drawDie(Die selectedDie, float size, float x, float y, bool isClickable, sf::RenderWindow* window);

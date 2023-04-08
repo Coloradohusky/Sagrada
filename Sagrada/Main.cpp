@@ -219,19 +219,19 @@ int main() {
 					privColor.setOutlineColor(sf::Color::Black);
 					privColor.setPosition(SCREEN_WIDTH / 2.0, SCREEN_HEIGHT / 1.5);
 					if (players[i].getPrivateObjective() == "Blue") {
-						privColor.setFillColor(sf::Color(45, 187, 200, 255));
+						privColor.setFillColor(blue);
 					}
 					else if (players[i].getPrivateObjective() == "Red") {
-						privColor.setFillColor(sf::Color(220, 35, 39, 255));
+						privColor.setFillColor(red);
 					}
 					else if (players[i].getPrivateObjective() == "Green") {
-						privColor.setFillColor(sf::Color(3, 171, 108, 255));
+						privColor.setFillColor(green);
 					}
 					else if (players[i].getPrivateObjective() == "Purple") {
-						privColor.setFillColor(sf::Color(165, 65, 152, 255));
+						privColor.setFillColor(purple);
 					}
 					else if (players[i].getPrivateObjective() == "Yellow") {
-						privColor.setFillColor(sf::Color(243, 222, 12, 255));
+						privColor.setFillColor(yellow);
 					}
 					window.draw(privColor);
 					if (selected != 0) {
@@ -256,9 +256,9 @@ int main() {
 					// the game is over
 					window.draw(sf::RectangleShape());
 					break;
-				} else if (currentPlayer == playerCount) {
-					currentPlayer = 1;
-					currentTurn++;
+				} else if (currentPlayer == playerCount) { // TODO: fix player order
+					currentPlayer = 1; // 12344321, 23411432, etc
+					currentTurn++; // something something modulo? % 4
 				}
 				else {
 					currentPlayer++;
@@ -273,24 +273,24 @@ int main() {
 				float boardWidth = 450.0 * percentage;
 				boardOutline.setOrigin(boardWidth, 0);
 				boardOutline = RoundedRectangle(SCREEN_WIDTH - margin - boardWidth, 0 + margin,
-					boardWidth, boardHeight, 10, darkGray, 2, sf::Color::Black);
+					boardWidth, boardHeight, 10, darkGray, 5, sf::Color::Black);
 				window.draw(boardOutline);
 				drawBoard(players[currentPlayer - 1].getBoard().getDice(), &window, boardOutline, Die());
 				sf::RectangleShape privObj;
 				if (players[currentPlayer - 1].getPrivateObjective() == "Blue") {
-					privObj.setFillColor(sf::Color(45, 187, 200, 255));
+					privObj.setFillColor(blue);
 				}
 				else if (players[currentPlayer - 1].getPrivateObjective() == "Red") {
-					privObj.setFillColor(sf::Color(220, 35, 39, 255));
+					privObj.setFillColor(red);
 				}
 				else if (players[currentPlayer - 1].getPrivateObjective() == "Green") {
-					privObj.setFillColor(sf::Color(3, 171, 108, 255));
+					privObj.setFillColor(green);
 				}
 				else if (players[currentPlayer - 1].getPrivateObjective() == "Purple") {
-					privObj.setFillColor(sf::Color(165, 65, 152, 255));
+					privObj.setFillColor(purple);
 				}
 				else if (players[currentPlayer - 1].getPrivateObjective() == "Yellow") {
-					privObj.setFillColor(sf::Color(243, 222, 12, 255));
+					privObj.setFillColor(yellow);
 				}
 				privObj.setSize(sf::Vector2f(boardWidth / 1.5, boardWidth / 9.0));
 				privObj.setPosition(SCREEN_WIDTH - margin * 1.7 - boardWidth / 1.5, 0 - margin * 2.75 + boardHeight);
@@ -326,15 +326,19 @@ int main() {
 				sf::ConvexShape draftPool;
 				float draftPoolWidth = 300.0 * ((double)SCREEN_WIDTH / (double)DEFAULT_SCREEN_WIDTH);
 				float draftPoolHeight = 583.0 * ((double)SCREEN_WIDTH / (double)DEFAULT_SCREEN_WIDTH);
-				draftPool = RoundedRectangle(0 + margin, 0 + margin, draftPoolWidth, draftPoolHeight, 10, darkGray, 2, sf::Color::Black);
-				//window.draw(draftPool);
-				std::vector<sf::ConvexShape> dicePoolShapes;
+				draftPool = RoundedRectangle(0 + margin, 0 + margin, draftPoolWidth, draftPoolHeight, 10, darkGray, 5, sf::Color::Black);
+				window.draw(draftPool);
+				std::vector<sf::RectangleShape> dicePoolShapes;
 				for (int d = 0; d < dicePool.size(); d++) {
 					if (dicePoolShapes.size() != dicePool.size()) {
-						float diceSize = 100.0 * ((double)SCREEN_WIDTH / (double)DEFAULT_SCREEN_WIDTH);
-						dicePoolShapes.push_back(RoundedRectangle(0 + margin + d * 6.0, 0 + margin + d * 6.0, diceSize, diceSize, 10, dicePool.getDieColor(d), 2, sf::Color::Black));
+						float diceSize = 80.0 * ((double)SCREEN_WIDTH / (double)DEFAULT_SCREEN_WIDTH);
+						float diceMargin = margin * 1.3;
+						float diceX = 0 + diceMargin + d * 6.0; // TODO: RANDOMIZE within the borders of diceMargin
+						float diceY = 0 + diceMargin + d * 6.0;
+						// if clicked on or if == selectedDie, set selectedDie to that die AND set clickable to TRUE
+						// otherwise, FALSE
+						dicePoolShapes.push_back(drawDie(dicePool.getDie(d), diceSize, diceX, diceY, false, &window));
 					}
-					window.draw(dicePoolShapes[d]);
 				}
 			}
 			// until max playercount is reached, then set back to 1 and increment currentTurn by 1

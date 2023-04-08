@@ -10,6 +10,7 @@ public:
 	void roll(DiceBag* diceBag, int playerCount);
 	int size();
 	sf::Color getDieColor(int index);
+	Die getDie(int index);
 private:
 	std::vector<Die> draftPool;
 };

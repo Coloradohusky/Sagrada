@@ -1,4 +1,5 @@
 #include "DicePool.hpp"
+#include "Custom.hpp"
 
 bool DicePool::isEmpty() {
 	return draftPool.empty();
@@ -15,21 +16,25 @@ int DicePool::size() {
 sf::Color DicePool::getDieColor(int index)
 {
 	if (draftPool[index].getColor() == "Blue") {
-		return sf::Color(45, 187, 200, 255); // TODO: include Custom.hpp for global colors (will that work?)
+		return blue;
 	}
 	else if (draftPool[index].getColor() == "Red") {
-		return sf::Color(220, 35, 39, 255);
+		return red;
 	}
 	else if (draftPool[index].getColor() == "Green") {
-		return sf::Color(3, 171, 108, 255);
+		return green;
 	}
 	else if (draftPool[index].getColor() == "Purple") {
-		return sf::Color(165, 65, 152, 255);
+		return purple;
 	}
 	else if (draftPool[index].getColor() == "Yellow") {
-		return sf::Color(243, 222, 12, 255);
+		return yellow;
 	}
 	else {
 		return sf::Color::Black;
 	}
+}
+
+Die DicePool::getDie(int index) {
+	return draftPool[index];
 }
