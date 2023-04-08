@@ -166,67 +166,6 @@ int drawBoard(std::vector<std::vector<Die>> frameBoard, sf::RenderWindow* window
 		for (int j = 0; j < frameBoard[0].size(); j++) { // TODO: Turn into separate function (drawDie)
 			drawDie(frameBoard[i][j], squareSize, startX + (squareSize + SCREEN_WIDTH / margin) * j, 
 				startY + (squareSize + SCREEN_HEIGHT / margin) * i, clickable[i][j], window);
-			//sf::RectangleShape square(sf::Vector2f(squareSize, squareSize));
-			//square.setPosition(, );
-			//square.setOutlineColor(mediumGray);
-			//square.setOutlineThickness(2);
-			//square.setFillColor(lightGray); // TODO: Make global colors (add to Custom.hpp/cpp?)
-			//// Set fill color, draw dots
-			//if (frameBoard[i][j].getColor() == "Blue") {
-			//	square.setFillColor(blue);
-			//}
-			//else if (frameBoard[i][j].getColor() == "Red") {
-			//	square.setFillColor(red);
-			//}
-			//else if (frameBoard[i][j].getColor() == "Green") {
-			//	square.setFillColor(green); // (these too)
-			//}
-			//else if (frameBoard[i][j].getColor() == "Purple") {
-			//	square.setFillColor(purple);
-			//}
-			//else if (frameBoard[i][j].getColor() == "Yellow") {
-			//	square.setFillColor(yellow);
-			//}
-			//sf::CircleShape dotCircle;
-			//dotCircle.setRadius(square.getGlobalBounds().height / 10.0);
-			//dotCircle.setFillColor(sf::Color::Black);
-			//float dotMargin = square.getSize().x / 18.f;
-			//if (frameBoard[i][j].getNumber() != 0 && frameBoard[i][j].getColor() == "") {
-			//	square.setFillColor(sf::Color(74, 79, 78, 255));
-			//}
-			//if (clickable[i][j] == true) {
-			//	square.setOutlineColor(sf::Color::Yellow);
-			//}
-			//window->draw(square);
-			//if ((std::set<int> {2, 4, 5, 6}).count(frameBoard[i][j].getNumber()) > 0) { // top-left and bottom-right
-			//	dotCircle.setPosition(square.getPosition().x + dotMargin,
-			//		square.getPosition().y + dotMargin);
-			//	window->draw(dotCircle); // top-left
-			//	dotCircle.setPosition(square.getPosition().x + square.getSize().x - dotCircle.getRadius() * 2.0 - dotMargin,
-			//		square.getPosition().y + square.getSize().y - dotCircle.getRadius() * 2.0 - dotMargin);
-			//	window->draw(dotCircle); // bottom-right
-			//}
-			//if ((std::set<int> {1, 3, 5}).count(frameBoard[i][j].getNumber()) > 0) { // center
-			//	dotCircle.setPosition(square.getPosition().x + (square.getSize().x - dotCircle.getRadius() * 2.0) / 2.f,
-			//		square.getPosition().y + (square.getSize().y - dotCircle.getRadius() * 2.0) / 2.f);
-			//	window->draw(dotCircle); // center
-			//}
-			//if ((std::set<int> {3, 4, 5, 6}).count(frameBoard[i][j].getNumber()) > 0) { // top-right and bottom-left
-			//	dotCircle.setPosition(square.getPosition().x + square.getSize().x - dotCircle.getRadius() * 2.0 - dotMargin,
-			//		square.getPosition().y + dotMargin);
-			//	window->draw(dotCircle); // top-right
-			//	dotCircle.setPosition(square.getPosition().x + dotMargin,
-			//		square.getPosition().y + square.getSize().y - dotCircle.getRadius() * 2.0 - dotMargin);
-			//	window->draw(dotCircle); // bottom-left
-			//}
-			//if ((std::set<int> {6}).count(frameBoard[i][j].getNumber()) > 0) { // middle-left and middle-right
-			//	dotCircle.setPosition(square.getPosition().x + dotMargin,
-			//		square.getPosition().y + (square.getSize().y - dotCircle.getRadius() * 2.0) / 2.f);
-			//	window->draw(dotCircle); // middle-left
-			//	dotCircle.setPosition(square.getPosition().x + square.getSize().x - dotCircle.getRadius() * 2.0 - dotMargin,
-			//		square.getPosition().y + (square.getSize().y - dotCircle.getRadius() * 2.0) / 2.f);
-			//	window->draw(dotCircle); // middle-right
-			//}
 		}
 	}
 	return 0;

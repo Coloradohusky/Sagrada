@@ -71,6 +71,8 @@ int main() {
 	int currentPlayer = 1;
 	int currentTurn = 1;
 	int playGame = 0;
+	int currentPlayerIsDone = 0;
+	std::vector<int> playerOrder;
 
 	for (int i = 0; i < 8; i++) {
 		int randomNumber = dist(mt);
@@ -245,27 +247,70 @@ int main() {
 					playGame = i;
 				}
 			}
+			if (playerCount == 2) {
+				playerOrder = { 1, 2, 2, 1, 0 }; // extra zero is so that we can detect when the round is over
+			}
+			else if (playerCount == 3) {
+				playerOrder = { 1, 2, 3, 3, 2, 1, 0 };
+			}
+			else {
+				playerOrder = { 1, 2, 3, 4, 4, 3, 2, 1, 0 };
+			}
 		}
 		else {
 			if (dicePool.isEmpty()) {
 				dicePool.roll(&diceBag, playerCount);
 			}
-			int currentPlayerIsDone = 0;
-			if (currentPlayerIsDone == 1) {
-				if (currentTurn == 10 && currentPlayer == playerCount) {
+			if (currentPlayerIsDone == 1 || currentPlayer == 0) {
+				if (currentTurn == 10 && currentPlayer == 0) {
 					// the game is over
 					window.draw(sf::RectangleShape());
 					break;
-				} else if (currentPlayer == playerCount) { // TODO: fix player order
-					currentPlayer = 1; // 12344321, 23411432, etc
-					currentTurn++; // something something modulo? % 4
+				} else if (currentPlayer == 0) {
+					if (playerOrder[1] == 1) {
+						if (playerCount == 2) {
+							playerOrder = { 2, 1, 1, 2, 0 };
+						}
+						else if (playerCount == 3) {
+							playerOrder = { 2, 3, 1, 1, 3, 2, 0 };
+						}
+						else {
+							playerOrder = { 2, 3, 4, 1, 1, 4, 3, 2, 0 };
+						}
+					}
+					else if (playerOrder[1] == 2) {
+						if (playerCount == 2) {
+							playerOrder = { 1, 2, 2, 1, 0 };
+						}
+						else if (playerCount == 3) {
+							playerOrder = { 3, 1, 2, 2, 1, 3, 0 };
+						}
+						else {
+							playerOrder = { 3, 4, 1, 2, 2, 1, 4, 3, 0 };
+						}
+					}
+					else if (playerOrder[1] == 3) {
+						if (playerCount == 3) {
+							playerOrder = { 1, 2, 3, 3, 2, 1, 0 };
+						}
+						else {
+							playerOrder = { 4, 1, 2, 3, 3, 2, 1, 4, 0};
+						}
+					}
+					else {
+						playerOrder = { 1, 2, 3, 4, 4, 3, 2, 1, 0 };
+					}
+					currentPlayer = playerOrder[0];
+					currentTurn++;
 				}
 				else {
-					currentPlayer++;
+					playerOrder.push_back(playerOrder[0]);
+					playerOrder.erase(playerOrder.begin());
+					currentPlayer = playerOrder[0];
 				}
 				currentPlayerIsDone = 0;
 			}
-			else {
+			else if (currentPlayer != 0) {
 				sf::ConvexShape boardOutline;
 				float percentage = (float)SCREEN_WIDTH / (float)DEFAULT_SCREEN_WIDTH;
 				float margin = 20.0 * percentage;
@@ -340,6 +385,12 @@ int main() {
 						dicePoolShapes.push_back(drawDie(dicePool.getDie(d), diceSize, diceX, diceY, false, &window));
 					}
 				}
+				//if (MouseInConvexShape(draftPool, &window)) {
+				//	if (sf::Mouse::isButtonPressed(sf::Mouse::Left)) {
+				//		currentPlayerIsDone = 1;
+				//	}
+				//	draftPool.setOutlineColor(sf::Color::Yellow);
+				//}
 			}
 			// until max playercount is reached, then set back to 1 and increment currentTurn by 1
 		}
