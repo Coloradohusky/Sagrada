@@ -313,6 +313,7 @@ int main() {
 				currentPlayerIsDone = 0;
 			}
 			else if (currentPlayer != 0) {
+				//players[currentPlayer - 1].setDieInBoard(0, 0, Die("Red", 4));
 				sf::ConvexShape boardOutline;
 				float percentage = (float)SCREEN_WIDTH / (float)DEFAULT_SCREEN_WIDTH;
 				float margin = 20.0 * percentage;

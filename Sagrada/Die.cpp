@@ -63,6 +63,13 @@ bool Die::isEmpty() {
 	return false;
 }
 
+bool Die::isFull() {
+	if (color != "" && number != 0) {
+		return true;
+	}
+	return false;
+}
+
 std::string Die::getColor() {
 	return color;
 }

@@ -11,6 +11,7 @@ public:
 	bool equals(Die newDie);
 	std::string toString();
 	bool isEmpty();
+	bool isFull();
 	std::string getColor();
 	int getNumber();
 private:

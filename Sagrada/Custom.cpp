@@ -68,6 +68,94 @@ std::vector<std::vector<bool>> determinePlacementSpots(std::vector<std::vector<D
 		};
 	}
 	// do checks
+	std::vector<std::vector<bool>> dice_spots(4, std::vector<bool>(5, true));
+	for (int i = 0; i < board.size(); i++) {
+		for (int j = 0; j < board[0].size(); j++) {
+			// check for already-placed dice
+			if (true) { // makes for easier collapsing of sections
+				if (board[i][j].isFull()) {
+					placementSpots[i][j] = false;
+				}
+			}
+			// check for values
+			if (restrictions != "Value") {
+				if (board[i][j].getNumber() != selectedDie.getNumber() && board[i][j].getNumber() != 0) {
+					placementSpots[i][j] = false;
+				}
+			}
+			// check for colors
+			if (restrictions != "Color") {
+				if (board[i][j].getColor() != selectedDie.getColor() && board[i][j].getColor() != "") {
+					placementSpots[i][j] = false;
+				}
+			}
+			// check for adjacency
+			if (restrictions != "Adjacent") {
+				bool there_are_dice = false;
+				for (std::vector<Die> x : board) { // First, check if there are ANY dice in the board.
+					for (Die y : x) {
+						if (y.isFull()) {
+							there_are_dice = true;
+						}
+					}
+				}
+				if (!there_are_dice) { // If there aren't any dice in the window, then dice can ONLY be placed on the outside spots
+					placementSpots[1][1] = false;
+					placementSpots[1][2] = false;
+					placementSpots[1][3] = false;
+					placementSpots[2][1] = false;
+					placementSpots[2][2] = false;
+					placementSpots[2][3] = false;
+					//std::vector<std::vector<bool>> adjacent_spots = {
+					//	{true, true, true, true, true},
+					//	{true, false, false, false, true},
+					//	{true, false, false, false, true},
+					//	{true, true, true, true, true}
+					//};
+					//for (int i = 0; i < 4; i++) {
+					//	for (int j = 0; j < 5; j++) {
+					//		if (placementSpots[i][j] != adjacent_spots[i][j]) {
+					//			placementSpots[i][j] = false;
+					//		}
+					//	}
+					//}
+				}
+				else {
+					//std::vector<std::vector<bool>> adjacent_spots(4, std::vector<bool>(5, true));
+					for (int i = 0; i < 4; i++) {
+						for (int j = 0; j < 5; j++) {
+							std::vector<bool> spots_to_check;
+							// TODO: I forgot to remember that dice of same color/number can't be placed next to each other
+							// TODO: I don't have enough brainpower to do that today, so do it eventually... alright?
+							for (int k = -1; k < 2; k++) {
+								for (int q = -1; q < 2; q++) {
+									int xx = i + k;
+									int yy = j + q;
+									// If [xx][yy] isn't out of bounds and if [xx][yy] != [i][j] AND if there isn't already a die
+									if (!(xx < 0 || xx > 3 || yy < 0 || yy > 4 || (k == 0 && q == 0) || !dice_spots[i][j])) {
+										spots_to_check.push_back(dice_spots[xx][yy]);
+									}
+								}
+							}
+							if (std::find(spots_to_check.begin(), spots_to_check.end(), false) != spots_to_check.end()) {
+								//adjacent_spots[i][j] = true;
+							}
+							else {
+								placementSpots[i][j] = false;
+							}
+						}
+					}
+					//for (int i = 0; i < 4; i++) {
+					//	for (int j = 0; j < 5; j++) {
+					//		if (placementSpots[i][j] != adjacent_spots[i][j]) {
+					//			placementSpots[i][j] = false;
+					//		}
+					//	}
+					//}
+				}
+			}
+		}
+	}
 	return placementSpots;
 }
 
@@ -145,7 +233,7 @@ int drawFrame(std::string frameName, std::vector<std::vector<Die>> frameBoard, i
 		rectBorder.setOutlineColor(sf::Color::Yellow);
 	}
 
-	// just use the rects for proper positioning, don't actually draw them (unless...)
+	// just use the rects for proper positioning, don't actually draw them
 	window->draw(rectBorder);
 	window->draw(frameNameText);
 	window->draw(frameTokensText);
@@ -179,7 +267,7 @@ sf::RectangleShape drawDie(Die selectedDie, float size, float x, float y, sf::Co
 	square.setPosition(x, y);
 	square.setOutlineColor(mediumGray);
 	square.setOutlineThickness(2);
-	square.setFillColor(lightGray); // TODO: Make global colors (add to Custom.hpp/cpp?)
+	square.setFillColor(lightGray);
 	// Set fill color, draw dots
 	if (selectedDie.getColor() == "Blue") {
 		square.setFillColor(blue);
