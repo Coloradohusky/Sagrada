@@ -36,5 +36,8 @@ sf::Color DicePool::getDieColor(int index)
 }
 
 Die DicePool::getDie(int index) {
+	if (index < 0 || index >= draftPool.size()) {
+		return Die();
+	}
 	return draftPool[index];
 }

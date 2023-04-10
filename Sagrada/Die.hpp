@@ -8,7 +8,7 @@ public:
 	void roll();
 	void setNumber(int newNumber);
 	void set(std::string data);
-	bool compare(std::string name);
+	bool equals(Die newDie);
 	std::string toString();
 	bool isEmpty();
 	std::string getColor();

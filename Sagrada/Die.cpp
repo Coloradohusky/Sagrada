@@ -39,8 +39,8 @@ void Die::set(std::string data) {
 	}
 }
 
-bool Die::compare(std::string name) {
-	if (this->toString() == name) {
+bool Die::equals(Die newDie) {
+	if (color == newDie.getColor() && number == newDie.getNumber()) {
 		return true;
 	}
 	return false;

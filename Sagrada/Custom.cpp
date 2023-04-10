@@ -90,8 +90,7 @@ void fillFrameArray(boost::property_tree::ptree& pt, std::vector<PatternCard>* f
 	}
 }
 
-int drawFrame(std::string frameName, std::vector<std::vector<Die>> frameBoard, int frameTokens, sf::RenderWindow* window, int position)
-{
+int drawFrame(std::string frameName, std::vector<std::vector<Die>> frameBoard, int frameTokens, sf::RenderWindow* window, int position) {
 	double ratio = 2.5;
 
 	sf::ConvexShape rectBorder;
@@ -163,15 +162,19 @@ int drawBoard(std::vector<std::vector<Die>> frameBoard, sf::RenderWindow* window
 	double newX = startX;
 	double newY = startY;
 	for (int i = 0; i < frameBoard.size(); i++) {
-		for (int j = 0; j < frameBoard[0].size(); j++) { // TODO: Turn into separate function (drawDie)
+		for (int j = 0; j < frameBoard[0].size(); j++) {
+			sf::Color outline = mediumGray;
+			if (clickable[i][j]) {
+				outline = sf::Color::Green;
+			}
 			drawDie(frameBoard[i][j], squareSize, startX + (squareSize + SCREEN_WIDTH / margin) * j, 
-				startY + (squareSize + SCREEN_HEIGHT / margin) * i, clickable[i][j], window);
+				startY + (squareSize + SCREEN_HEIGHT / margin) * i, outline, window);
 		}
 	}
 	return 0;
 }
 
-sf::RectangleShape drawDie(Die selectedDie, float size, float x, float y, bool isClickable, sf::RenderWindow* window) {
+sf::RectangleShape drawDie(Die selectedDie, float size, float x, float y, sf::Color isClickableOutlineColor, sf::RenderWindow* window) {
 	sf::RectangleShape square(sf::Vector2f(size, size));
 	square.setPosition(x, y);
 	square.setOutlineColor(mediumGray);
@@ -200,9 +203,7 @@ sf::RectangleShape drawDie(Die selectedDie, float size, float x, float y, bool i
 	if (selectedDie.getNumber() != 0 && selectedDie.getColor() == "") {
 		square.setFillColor(sf::Color(74, 79, 78, 255));
 	}
-	if (isClickable) {
-		square.setOutlineColor(sf::Color::Yellow);
-	}
+	square.setOutlineColor(isClickableOutlineColor);
 	window->draw(square);
 	if ((std::set<int> {2, 4, 5, 6}).count(selectedDie.getNumber()) > 0) { // top-left and bottom-right
 		dotCircle.setPosition(square.getPosition().x + dotMargin,

@@ -73,6 +73,8 @@ int main() {
 	int playGame = 0;
 	int currentPlayerIsDone = 0;
 	std::vector<int> playerOrder;
+	std::vector<sf::RectangleShape> dicePoolShapes;
+	int selectedDieIndex = -1;
 
 	for (int i = 0; i < 8; i++) {
 		int randomNumber = dist(mt);
@@ -320,7 +322,8 @@ int main() {
 				boardOutline = RoundedRectangle(SCREEN_WIDTH - margin - boardWidth, 0 + margin,
 					boardWidth, boardHeight, 10, darkGray, 5, sf::Color::Black);
 				window.draw(boardOutline);
-				drawBoard(players[currentPlayer - 1].getBoard().getDice(), &window, boardOutline, Die());
+				drawBoard(players[currentPlayer - 1].getBoard().getDice(), &window, boardOutline, dicePool.getDie(selectedDieIndex));
+				// draw token count and private objective in bottom of the board outline
 				sf::RectangleShape privObj;
 				if (players[currentPlayer - 1].getPrivateObjective() == "Blue") {
 					privObj.setFillColor(blue);
@@ -350,7 +353,6 @@ int main() {
 				tokenCount.setCharacterSize(40.0 * ((double)SCREEN_WIDTH / (double)DEFAULT_SCREEN_WIDTH));
 				tokenCount.setPosition(SCREEN_WIDTH + margin - boardWidth, 0 - margin * 2.8 + boardHeight);
 				window.draw(tokenCount);
-				// draw token count and private objective in bottom of the board outline
 				// objective + tool cards are 63x88
 				sf::ConvexShape objectiveCards[3];
 				float objectiveCardWidth = 63.0 * 2.05 * ((double)SCREEN_WIDTH / (double)DEFAULT_SCREEN_WIDTH);
@@ -373,24 +375,64 @@ int main() {
 				float draftPoolHeight = 583.0 * ((double)SCREEN_WIDTH / (double)DEFAULT_SCREEN_WIDTH);
 				draftPool = RoundedRectangle(0 + margin, 0 + margin, draftPoolWidth, draftPoolHeight, 10, darkGray, 5, sf::Color::Black);
 				window.draw(draftPool);
-				std::vector<sf::RectangleShape> dicePoolShapes;
+				sf::RectangleShape draftPoolOutline; // used for setting the position of the dice
+				float diceMargin = margin * 1.75;
+				draftPoolOutline.setPosition(0 + diceMargin, 0 + diceMargin);
+				draftPoolOutline.setSize(sf::Vector2f(draftPool.getLocalBounds().width - diceMargin * 1.25, draftPool.getLocalBounds().height - diceMargin * 1.25));
 				for (int d = 0; d < dicePool.size(); d++) {
+					float diceSize = 65.0 * ((double)SCREEN_WIDTH / (double)DEFAULT_SCREEN_WIDTH);
+					float x, y;
 					if (dicePoolShapes.size() != dicePool.size()) {
-						float diceSize = 80.0 * ((double)SCREEN_WIDTH / (double)DEFAULT_SCREEN_WIDTH);
-						float diceMargin = margin * 1.3;
-						float diceX = 0 + diceMargin + d * 6.0; // TODO: RANDOMIZE within the borders of diceMargin
-						float diceY = 0 + diceMargin + d * 6.0;
-						// if clicked on or if == selectedDie, set selectedDie to that die AND set clickable to TRUE
-						// otherwise, FALSE
-						dicePoolShapes.push_back(drawDie(dicePool.getDie(d), diceSize, diceX, diceY, false, &window));
+						std::uniform_int_distribution<int> diceDistX(0, (int)draftPoolOutline.getGlobalBounds().width - (int)diceSize);
+						std::uniform_int_distribution<int> diceDistY(0, (int)draftPoolOutline.getGlobalBounds().height - (int)diceSize);
+						x = diceDistX(mt) + draftPoolOutline.getGlobalBounds().left;
+						y = diceDistY(mt) + draftPoolOutline.getGlobalBounds().top;
+						sf::RectangleShape rectangle;
+						rectangle.setPosition(x, y);
+						rectangle.setSize(sf::Vector2f(diceSize, diceSize));
+						bool intersects = false;
+						for (int i = 0; i < dicePoolShapes.size(); i++) {
+							sf::RectangleShape r = dicePoolShapes[i];
+							sf::FloatRect checkGlobal = r.getGlobalBounds();
+							checkGlobal.left -= 9.0;
+							checkGlobal.top -= 9.0;
+							checkGlobal.width += 18.0;
+							checkGlobal.height += 18.0;
+							if (rectangle.getGlobalBounds().intersects(checkGlobal)) {
+								intersects = true;
+								break;
+							}
+						}
+						if (!intersects) {
+							dicePoolShapes.push_back(drawDie(dicePool.getDie(d), diceSize, x, y, mediumGray, &window));
+						}
+						else {
+							d--;
+						}
+					}
+					else {
+						x = dicePoolShapes[d].getGlobalBounds().left;
+						y = dicePoolShapes[d].getGlobalBounds().top;
+						sf::RectangleShape currDice;
+						currDice.setPosition(x, y);
+						currDice.setSize(sf::Vector2f(diceSize, diceSize));
+						if (currDice.getGlobalBounds().contains((sf::Vector2f)sf::Mouse::getPosition(window))) {
+							if (sf::Mouse::isButtonPressed(sf::Mouse::Left)) {
+								selectedDieIndex = d;
+							}
+							drawDie(dicePool.getDie(d), diceSize, x, y, sf::Color::Yellow, &window);
+						}
+						else if (selectedDieIndex == d) {
+							drawDie(dicePool.getDie(d), diceSize, x, y, sf::Color::Green, &window);
+						}
+						else {
+							drawDie(dicePool.getDie(d), diceSize, x, y, mediumGray, &window);
+						}
+						if (sf::Mouse::isButtonPressed(sf::Mouse::Right)) { // right-button press deselects die
+							selectedDieIndex = -1;
+						}
 					}
 				}
-				//if (MouseInConvexShape(draftPool, &window)) {
-				//	if (sf::Mouse::isButtonPressed(sf::Mouse::Left)) {
-				//		currentPlayerIsDone = 1;
-				//	}
-				//	draftPool.setOutlineColor(sf::Color::Yellow);
-				//}
 			}
 			// until max playercount is reached, then set back to 1 and increment currentTurn by 1
 		}
