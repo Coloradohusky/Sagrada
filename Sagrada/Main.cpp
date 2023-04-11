@@ -369,7 +369,7 @@ int main() {
 				currentPlayerText.setStyle(sf::Text::Bold);
 				currentPlayerText.setFillColor(sf::Color::Black);
 				currentPlayerText.setCharacterSize(40.0 * ((double)SCREEN_WIDTH / (double)DEFAULT_SCREEN_WIDTH));
-				currentPlayerText.setPosition(SCREEN_WIDTH - margin * 1.7 - boardWidth / 1.5, 0 - margin * 2.75 + boardHeight);
+				currentPlayerText.setPosition(SCREEN_WIDTH - margin * 1.4 - boardWidth / 1.5, 0 - margin * 2.8 + boardHeight);
 				window.draw(currentPlayerText);
 				// objective + tool cards are 63x88
 				sf::ConvexShape objectiveCards[3];
@@ -393,11 +393,11 @@ int main() {
 				float draftPoolHeight = 583.0 * ((double)SCREEN_WIDTH / (double)DEFAULT_SCREEN_WIDTH);
 				draftPool = RoundedRectangle(0 + margin, 0 + margin, draftPoolWidth, draftPoolHeight, 10, darkGray, 5, sf::Color::Black);
 				window.draw(draftPool);
-				sf::RectangleShape draftPoolOutline; // used for setting the position of the dice
+				sf::RectangleShape draftPoolOutline; // used for setting the position of the dice, don't draw
 				float diceMargin = margin * 1.75;
 				draftPoolOutline.setPosition(0 + diceMargin, 0 + diceMargin);
 				draftPoolOutline.setSize(sf::Vector2f(draftPool.getLocalBounds().width - diceMargin * 1.25, draftPool.getLocalBounds().height - diceMargin * 1.25));
-				for (int d = 0; d < dicePool.size(); d++) {
+				for (int d = 0; d < dicePool.size(); d++) { // draw each die in the draft pool
 					float diceSize = 65.0 * ((double)SCREEN_WIDTH / (double)DEFAULT_SCREEN_WIDTH);
 					float x, y;
 					if (dicePoolShapes.size() != dicePool.size()) { // add dice to draft pool as needed
@@ -409,7 +409,7 @@ int main() {
 						rectangle.setPosition(x, y);
 						rectangle.setSize(sf::Vector2f(diceSize, diceSize));
 						bool intersects = false;
-						for (int i = 0; i < dicePoolShapes.size(); i++) {
+						for (int i = 0; i < dicePoolShapes.size(); i++) { // make sure the dice doesn't intersect
 							sf::RectangleShape r = dicePoolShapes[i];
 							sf::FloatRect checkGlobal = r.getGlobalBounds();
 							checkGlobal.left -= 9.0;
@@ -424,7 +424,7 @@ int main() {
 						if (!intersects) {
 							dicePoolShapes.push_back(drawDie(dicePool.getDie(d), diceSize, x, y, mediumGray, &window));
 						}
-						else {
+						else { // redo if it intersects
 							d--;
 						}
 					}
@@ -435,24 +435,21 @@ int main() {
 						currDice.setPosition(x, y);
 						currDice.setSize(sf::Vector2f(diceSize, diceSize));
 						if (currDice.getGlobalBounds().contains((sf::Vector2f)sf::Mouse::getPosition(window))) {
-							if (sf::Mouse::isButtonPressed(sf::Mouse::Left)) {
+							if (sf::Mouse::isButtonPressed(sf::Mouse::Left)) { // click draft pool die
 								selectedDieIndex = d;
 							}
+							// color on hover
 							drawDie(dicePool.getDie(d), diceSize, x, y, sf::Color::Yellow, &window);
 						}
 						else if (selectedDieIndex == d) {
+							// color if selected
 							drawDie(dicePool.getDie(d), diceSize, x, y, sf::Color::Green, &window);
 						}
 						else {
 							drawDie(dicePool.getDie(d), diceSize, x, y, mediumGray, &window);
 						}
 						if (sf::Mouse::isButtonPressed(sf::Mouse::Right) && selectedDieIndex != -1) { // right-button press deselects die
-							players[currentPlayer - 1].setDieInBoard(2, 2, dicePool.getDie(selectedDieIndex));
-							dicePool.removeDie(selectedDieIndex);
-							dicePoolShapes.erase(dicePoolShapes.begin() + selectedDieIndex);
-							currentPlayerIsDone = 1;
 							selectedDieIndex = -1;
-							Sleep(250);
 						}
 					}
 				}
