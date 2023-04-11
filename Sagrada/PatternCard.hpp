@@ -5,6 +5,7 @@
 #include "Die.hpp"
 #include "PlayerBoard.hpp"
 
+// inheritance!
 class PatternCard : public PlayerBoard {
 public:
     PatternCard();

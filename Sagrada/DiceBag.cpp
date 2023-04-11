@@ -29,3 +29,11 @@ std::vector<Die> DiceBag::draw(int amount) {
 	}
 	return newDraw;
 }
+
+Die DiceBag::draw()
+{
+	std::vector<Die> newDraw;
+	newDraw.insert(newDraw.begin(), diceBag.back());
+	diceBag.pop_back();
+	return newDraw.back();
+}

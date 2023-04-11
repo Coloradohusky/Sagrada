@@ -1,5 +1,6 @@
 #pragma once
 #include <iostream>
+
 class Die
 {
 public:

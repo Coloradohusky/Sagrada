@@ -41,3 +41,7 @@ Die DicePool::getDie(int index) {
 	}
 	return draftPool[index];
 }
+
+void DicePool::removeDie(int index) {
+	draftPool.erase(draftPool.begin() + index);
+}

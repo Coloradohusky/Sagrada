@@ -68,6 +68,7 @@ int main() {
 
 	DicePool dicePool;
 	DiceBag diceBag;
+	RoundTrack roundTrack;
 	int currentPlayer = 1;
 	int currentTurn = 1;
 	int playGame = 0;
@@ -260,7 +261,7 @@ int main() {
 			}
 		}
 		else {
-			if (dicePool.isEmpty()) {
+			if (dicePool.isEmpty() && currentTurn == 1) {
 				dicePool.roll(&diceBag, playerCount);
 			}
 			if (currentPlayerIsDone == 1 || currentPlayer == 0) {
@@ -269,6 +270,13 @@ int main() {
 					window.draw(sf::RectangleShape());
 					break;
 				} else if (currentPlayer == 0) {
+					// reset draft pool, add to round track
+					roundTrack.setRoundTrack(dicePool, currentTurn);
+					for (int r = 0; r < dicePool.size(); r++) {
+						dicePool.removeDie(r);
+					}
+					dicePool.roll(&diceBag, playerCount);
+					// set new player order
 					if (playerOrder[1] == 1) {
 						if (playerCount == 2) {
 							playerOrder = { 2, 1, 1, 2, 0 };
@@ -313,7 +321,7 @@ int main() {
 				currentPlayerIsDone = 0;
 			}
 			else if (currentPlayer != 0) {
-				players[currentPlayer - 1].setDieInBoard(0, 0, "Red 4");
+				//players[0].setDieInBoard(0, 0, "Red 4");
 				sf::ConvexShape boardOutline;
 				float percentage = (float)SCREEN_WIDTH / (float)DEFAULT_SCREEN_WIDTH;
 				float margin = 20.0 * percentage;
@@ -354,6 +362,15 @@ int main() {
 				tokenCount.setCharacterSize(40.0 * ((double)SCREEN_WIDTH / (double)DEFAULT_SCREEN_WIDTH));
 				tokenCount.setPosition(SCREEN_WIDTH + margin - boardWidth, 0 - margin * 2.8 + boardHeight);
 				window.draw(tokenCount);
+				// draw who the current player is
+				sf::Text currentPlayerText;
+				currentPlayerText.setString("Player " + std::to_string(currentPlayer));
+				currentPlayerText.setFont(font);
+				currentPlayerText.setStyle(sf::Text::Bold);
+				currentPlayerText.setFillColor(sf::Color::Black);
+				currentPlayerText.setCharacterSize(40.0 * ((double)SCREEN_WIDTH / (double)DEFAULT_SCREEN_WIDTH));
+				currentPlayerText.setPosition(SCREEN_WIDTH - margin * 1.7 - boardWidth / 1.5, 0 - margin * 2.75 + boardHeight);
+				window.draw(currentPlayerText);
 				// objective + tool cards are 63x88
 				sf::ConvexShape objectiveCards[3];
 				float objectiveCardWidth = 63.0 * 2.05 * ((double)SCREEN_WIDTH / (double)DEFAULT_SCREEN_WIDTH);
@@ -383,7 +400,7 @@ int main() {
 				for (int d = 0; d < dicePool.size(); d++) {
 					float diceSize = 65.0 * ((double)SCREEN_WIDTH / (double)DEFAULT_SCREEN_WIDTH);
 					float x, y;
-					if (dicePoolShapes.size() != dicePool.size()) {
+					if (dicePoolShapes.size() != dicePool.size()) { // add dice to draft pool as needed
 						std::uniform_int_distribution<int> diceDistX(0, (int)draftPoolOutline.getGlobalBounds().width - (int)diceSize);
 						std::uniform_int_distribution<int> diceDistY(0, (int)draftPoolOutline.getGlobalBounds().height - (int)diceSize);
 						x = diceDistX(mt) + draftPoolOutline.getGlobalBounds().left;
@@ -411,7 +428,7 @@ int main() {
 							d--;
 						}
 					}
-					else {
+					else { // if the dice have already been added to the draft pool
 						x = dicePoolShapes[d].getGlobalBounds().left;
 						y = dicePoolShapes[d].getGlobalBounds().top;
 						sf::RectangleShape currDice;
@@ -429,8 +446,13 @@ int main() {
 						else {
 							drawDie(dicePool.getDie(d), diceSize, x, y, mediumGray, &window);
 						}
-						if (sf::Mouse::isButtonPressed(sf::Mouse::Right)) { // right-button press deselects die
+						if (sf::Mouse::isButtonPressed(sf::Mouse::Right) && selectedDieIndex != -1) { // right-button press deselects die
+							players[currentPlayer - 1].setDieInBoard(2, 2, dicePool.getDie(selectedDieIndex));
+							dicePool.removeDie(selectedDieIndex);
+							dicePoolShapes.erase(dicePoolShapes.begin() + selectedDieIndex);
+							currentPlayerIsDone = 1;
 							selectedDieIndex = -1;
+							Sleep(250);
 						}
 					}
 				}

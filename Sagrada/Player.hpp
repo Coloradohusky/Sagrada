@@ -1,6 +1,7 @@
 #pragma once
 #include <iostream>
 #include "PlayerBoard.hpp"
+
 class Player
 {
 public:
@@ -9,6 +10,7 @@ public:
     void setPrivateObjective(std::string privObj);
     void setTokens(int newTokens);
     void setDieInBoard(int x, int y, std::string newDie);
+    void setDieInBoard(int x, int y, Die newDie);
     std::string toString();
     bool boardIsEmpty();
     int getTokens();
