@@ -268,7 +268,7 @@ int drawFrame(std::string frameName, std::vector<std::vector<Die>> frameBoard, i
 	return 0;
 }
 
-int drawBoard(std::vector<std::vector<Die>> frameBoard, sf::RenderWindow* window, sf::ConvexShape border, Die selectedDie) {
+std::vector<int> drawBoard(std::vector<std::vector<Die>> frameBoard, sf::RenderWindow* window, sf::ConvexShape border, Die selectedDie) {
 	std::vector<std::vector<bool>> clickable = determinePlacementSpots(frameBoard, selectedDie, "None");
 	float squareSize = border.getGlobalBounds().height / ((frameBoard.size() + 1.0) * 1.25);
 	sf::RectangleShape square(sf::Vector2f(squareSize, squareSize));
@@ -282,45 +282,56 @@ int drawBoard(std::vector<std::vector<Die>> frameBoard, sf::RenderWindow* window
 			if (clickable[i][j]) {
 				outline = sf::Color::Green;
 			}
-			drawDie(frameBoard[i][j], squareSize, startX + (squareSize + SCREEN_WIDTH / margin) * j, 
-				startY + (squareSize + SCREEN_HEIGHT / margin) * i, outline, window);
+			// draw die and check if it has been selected to place a dice from the draft pool in
+			if (drawDie(frameBoard[i][j], squareSize, startX + (squareSize + SCREEN_WIDTH / margin) * j,
+				startY + (squareSize + SCREEN_HEIGHT / margin) * i, outline, selectedDie, window).getFillColor() == sf::Color::White) {
+				std::vector<int> chosenDie = { i, j };
+				return chosenDie;
+				}
 		}
 	}
-	return 0;
+	return std::vector<int>();
 }
 
-sf::RectangleShape drawDie(Die selectedDie, float size, float x, float y, sf::Color isClickableOutlineColor, sf::RenderWindow* window) {
+sf::RectangleShape drawDie(Die currentDie, float size, float x, float y, sf::Color isClickableOutlineColor, Die selectedDie, sf::RenderWindow* window) {
 	sf::RectangleShape square(sf::Vector2f(size, size));
 	square.setPosition(x, y);
 	square.setOutlineColor(mediumGray);
 	square.setOutlineThickness(2);
 	square.setFillColor(lightGray);
 	// Set fill color, draw dots
-	if (selectedDie.getColor() == "Blue") {
+	if (currentDie.getColor() == "Blue") {
 		square.setFillColor(blue);
 	}
-	else if (selectedDie.getColor() == "Red") {
+	else if (currentDie.getColor() == "Red") {
 		square.setFillColor(red);
 	}
-	else if (selectedDie.getColor() == "Green") {
+	else if (currentDie.getColor() == "Green") {
 		square.setFillColor(green);
 	}
-	else if (selectedDie.getColor() == "Purple") {
+	else if (currentDie.getColor() == "Purple") {
 		square.setFillColor(purple);
 	}
-	else if (selectedDie.getColor() == "Yellow") {
+	else if (currentDie.getColor() == "Yellow") {
 		square.setFillColor(yellow);
 	}
 	sf::CircleShape dotCircle;
 	dotCircle.setRadius(square.getGlobalBounds().height / 10.0);
 	dotCircle.setFillColor(sf::Color::Black);
 	float dotMargin = square.getSize().x / 18.f;
-	if (selectedDie.getNumber() != 0 && selectedDie.getColor() == "") {
+	if (currentDie.getNumber() != 0 && currentDie.getColor() == "") {
 		square.setFillColor(sf::Color(74, 79, 78, 255));
 	}
 	square.setOutlineColor(isClickableOutlineColor);
+	if (square.getGlobalBounds().contains((sf::Vector2f)sf::Mouse::getPosition(*window)) && selectedDie.isFull()) {
+		if (sf::Mouse::isButtonPressed(sf::Mouse::Left) && isClickableOutlineColor == sf::Color::Green) { // click draft pool die
+			square.setFillColor(sf::Color::White); // the die has been clicked!
+		}
+		// color on hover
+		square.setOutlineColor(sf::Color::Yellow);
+	}
 	window->draw(square);
-	if ((std::set<int> {2, 4, 5, 6}).count(selectedDie.getNumber()) > 0) { // top-left and bottom-right
+	if ((std::set<int> {2, 4, 5, 6}).count(currentDie.getNumber()) > 0) { // top-left and bottom-right
 		dotCircle.setPosition(square.getPosition().x + dotMargin,
 			square.getPosition().y + dotMargin);
 		window->draw(dotCircle); // top-left
@@ -328,12 +339,12 @@ sf::RectangleShape drawDie(Die selectedDie, float size, float x, float y, sf::Co
 			square.getPosition().y + square.getSize().y - dotCircle.getRadius() * 2.0 - dotMargin);
 		window->draw(dotCircle); // bottom-right
 	}
-	if ((std::set<int> {1, 3, 5}).count(selectedDie.getNumber()) > 0) { // center
+	if ((std::set<int> {1, 3, 5}).count(currentDie.getNumber()) > 0) { // center
 		dotCircle.setPosition(square.getPosition().x + (square.getSize().x - dotCircle.getRadius() * 2.0) / 2.f,
 			square.getPosition().y + (square.getSize().y - dotCircle.getRadius() * 2.0) / 2.f);
 		window->draw(dotCircle); // center
 	}
-	if ((std::set<int> {3, 4, 5, 6}).count(selectedDie.getNumber()) > 0) { // top-right and bottom-left
+	if ((std::set<int> {3, 4, 5, 6}).count(currentDie.getNumber()) > 0) { // top-right and bottom-left
 		dotCircle.setPosition(square.getPosition().x + square.getSize().x - dotCircle.getRadius() * 2.0 - dotMargin,
 			square.getPosition().y + dotMargin);
 		window->draw(dotCircle); // top-right
@@ -341,7 +352,7 @@ sf::RectangleShape drawDie(Die selectedDie, float size, float x, float y, sf::Co
 			square.getPosition().y + square.getSize().y - dotCircle.getRadius() * 2.0 - dotMargin);
 		window->draw(dotCircle); // bottom-left
 	}
-	if ((std::set<int> {6}).count(selectedDie.getNumber()) > 0) { // middle-left and middle-right
+	if ((std::set<int> {6}).count(currentDie.getNumber()) > 0) { // middle-left and middle-right
 		dotCircle.setPosition(square.getPosition().x + dotMargin,
 			square.getPosition().y + (square.getSize().y - dotCircle.getRadius() * 2.0) / 2.f);
 		window->draw(dotCircle); // middle-left

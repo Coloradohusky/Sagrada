@@ -35,6 +35,6 @@ void fillFrameArray(boost::property_tree::ptree& pt, std::vector<PatternCard>* f
 
 int drawFrame(std::string frameName, std::vector<std::vector<Die>> frameBoard, int frameTokens, sf::RenderWindow* window, int position);
 
-int drawBoard(std::vector<std::vector<Die>> frameBoard, sf::RenderWindow* window, sf::ConvexShape border, Die selectedDie);
+std::vector<int> drawBoard(std::vector<std::vector<Die>> frameBoard, sf::RenderWindow* window, sf::ConvexShape border, Die selectedDie);
 
-sf::RectangleShape drawDie(Die selectedDie, float size, float x, float y, sf::Color isClickableOutlineColor, sf::RenderWindow* window);
+sf::RectangleShape drawDie(Die currentDie, float size, float x, float y, sf::Color isClickableOutlineColor, Die selectedDie, sf::RenderWindow* window);

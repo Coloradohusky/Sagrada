@@ -322,6 +322,7 @@ int main() {
 			}
 			else if (currentPlayer != 0) {
 				//players[0].setDieInBoard(0, 0, "Red 4");
+				// draw player board within boardOutline
 				sf::ConvexShape boardOutline;
 				float percentage = (float)SCREEN_WIDTH / (float)DEFAULT_SCREEN_WIDTH;
 				float margin = 20.0 * percentage;
@@ -331,7 +332,14 @@ int main() {
 				boardOutline = RoundedRectangle(SCREEN_WIDTH - margin - boardWidth, 0 + margin,
 					boardWidth, boardHeight, 10, darkGray, 5, sf::Color::Black);
 				window.draw(boardOutline);
-				drawBoard(players[currentPlayer - 1].getBoard().getDice(), &window, boardOutline, dicePool.getDie(selectedDieIndex));
+				std::vector <int> chosenDie = drawBoard(players[currentPlayer - 1].getBoard().getDice(), &window, boardOutline, dicePool.getDie(selectedDieIndex));
+				if (chosenDie.size() == 2) { // if die has been clicked (place die in board)
+					players[currentPlayer - 1].setDieInBoard(chosenDie[0], chosenDie[1], dicePool.getDie(selectedDieIndex));
+					dicePool.removeDie(selectedDieIndex);
+					dicePoolShapes.erase(dicePoolShapes.begin() + selectedDieIndex);
+					currentPlayerIsDone = 1;
+					selectedDieIndex = -1;
+				}
 				// draw token count and private objective in bottom of the board outline
 				sf::RectangleShape privObj;
 				if (players[currentPlayer - 1].getPrivateObjective() == "Blue") {
@@ -422,15 +430,15 @@ int main() {
 							}
 						}
 						if (!intersects) {
-							dicePoolShapes.push_back(drawDie(dicePool.getDie(d), diceSize, x, y, mediumGray, &window));
+							dicePoolShapes.push_back(drawDie(dicePool.getDie(d), diceSize, x, y, mediumGray, Die(), &window));
 						}
 						else { // redo if it intersects
 							d--;
 						}
 					}
 					else { // if the dice have already been added to the draft pool
-						x = dicePoolShapes[d].getGlobalBounds().left;
-						y = dicePoolShapes[d].getGlobalBounds().top;
+						x = dicePoolShapes[d].getGlobalBounds().left * ((double)SCREEN_WIDTH / (double)DEFAULT_SCREEN_WIDTH);;
+						y = dicePoolShapes[d].getGlobalBounds().top * ((double)SCREEN_WIDTH / (double)DEFAULT_SCREEN_WIDTH);;
 						sf::RectangleShape currDice;
 						currDice.setPosition(x, y);
 						currDice.setSize(sf::Vector2f(diceSize, diceSize));
@@ -439,14 +447,14 @@ int main() {
 								selectedDieIndex = d;
 							}
 							// color on hover
-							drawDie(dicePool.getDie(d), diceSize, x, y, sf::Color::Yellow, &window);
+							drawDie(dicePool.getDie(d), diceSize, x, y, sf::Color::Yellow, Die(), &window);
 						}
 						else if (selectedDieIndex == d) {
 							// color if selected
-							drawDie(dicePool.getDie(d), diceSize, x, y, sf::Color::Green, &window);
+							drawDie(dicePool.getDie(d), diceSize, x, y, sf::Color::Green, Die(), &window);
 						}
 						else {
-							drawDie(dicePool.getDie(d), diceSize, x, y, mediumGray, &window);
+							drawDie(dicePool.getDie(d), diceSize, x, y, mediumGray, Die(), &window);
 						}
 						if (sf::Mouse::isButtonPressed(sf::Mouse::Right) && selectedDieIndex != -1) { // right-button press deselects die
 							selectedDieIndex = -1;
