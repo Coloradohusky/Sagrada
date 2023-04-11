@@ -23,6 +23,10 @@ void Die::setNumber(int newNumber) {
 	number = newNumber;
 }
 
+void Die::setColor(std::string newColor) {
+	color = newColor;
+}
+
 void Die::set(std::string data) {
 	if (data.find(" ") != std::string::npos) {
 		color = data.substr(0, data.find(" "));

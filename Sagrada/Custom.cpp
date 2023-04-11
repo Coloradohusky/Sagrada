@@ -68,9 +68,9 @@ std::vector<std::vector<bool>> determinePlacementSpots(std::vector<std::vector<D
 		};
 	}
 	// do checks
-	std::vector<std::vector<bool>> dice_spots(4, std::vector<bool>(5, true));
 	for (int i = 0; i < board.size(); i++) {
 		for (int j = 0; j < board[0].size(); j++) {
+			// TODO: dice of the same number/color CANNOT be placed next to each other
 			// check for already-placed dice
 			if (true) { // makes for easier collapsing of sections
 				if (board[i][j].isFull()) {
@@ -82,11 +82,39 @@ std::vector<std::vector<bool>> determinePlacementSpots(std::vector<std::vector<D
 				if (board[i][j].getNumber() != selectedDie.getNumber() && board[i][j].getNumber() != 0) {
 					placementSpots[i][j] = false;
 				}
+				if (board[i][j].getNumber() == selectedDie.getNumber()) {
+					if (i + 1 < 4) {
+						placementSpots[i + 1][j] = false;
+					}
+					if (i - 1 > -1) {
+						placementSpots[i - 1][j] = false;
+					}
+					if (j + 1 < 5) {
+						placementSpots[i][j + 1] = false;
+					}
+					if (j - 1 > -1) {
+						placementSpots[i][j - 1] = false;
+					}
+				}
 			}
 			// check for colors
 			if (restrictions != "Color") {
 				if (board[i][j].getColor() != selectedDie.getColor() && board[i][j].getColor() != "") {
 					placementSpots[i][j] = false;
+				}
+				if (board[i][j].getColor() == selectedDie.getColor()) {
+					if (i + 1 < 4) {
+						placementSpots[i + 1][j] = false;
+					}
+					if (i - 1 > -1) {
+						placementSpots[i - 1][j] = false;
+					}
+					if (j + 1 < 5) {
+						placementSpots[i][j + 1] = false;
+					}
+					if (j - 1 > -1) {
+						placementSpots[i][j - 1] = false;
+					}
 				}
 			}
 			// check for adjacency
@@ -106,52 +134,51 @@ std::vector<std::vector<bool>> determinePlacementSpots(std::vector<std::vector<D
 					placementSpots[2][1] = false;
 					placementSpots[2][2] = false;
 					placementSpots[2][3] = false;
-					//std::vector<std::vector<bool>> adjacent_spots = {
-					//	{true, true, true, true, true},
-					//	{true, false, false, false, true},
-					//	{true, false, false, false, true},
-					//	{true, true, true, true, true}
-					//};
-					//for (int i = 0; i < 4; i++) {
-					//	for (int j = 0; j < 5; j++) {
-					//		if (placementSpots[i][j] != adjacent_spots[i][j]) {
-					//			placementSpots[i][j] = false;
-					//		}
-					//	}
-					//}
 				}
-				else {
-					//std::vector<std::vector<bool>> adjacent_spots(4, std::vector<bool>(5, true));
+				else { // Otherwise, they can only be placed next to existing dice
+					std::array<std::array<bool, 5>, 4> toCheck {{
+								{{false, false, false, false, false}},
+								{{false, false, false, false, false}},
+								{{false, false, false, false, false}},
+								{{false, false, false, false, false}}
+						}};
 					for (int i = 0; i < 4; i++) {
 						for (int j = 0; j < 5; j++) {
-							std::vector<bool> spots_to_check;
-							// TODO: I forgot to remember that dice of same color/number can't be placed next to each other
-							// TODO: I don't have enough brainpower to do that today, so do it eventually... alright?
-							for (int k = -1; k < 2; k++) {
-								for (int q = -1; q < 2; q++) {
-									int xx = i + k;
-									int yy = j + q;
-									// If [xx][yy] isn't out of bounds and if [xx][yy] != [i][j] AND if there isn't already a die
-									if (!(xx < 0 || xx > 3 || yy < 0 || yy > 4 || (k == 0 && q == 0) || !dice_spots[i][j])) {
-										spots_to_check.push_back(dice_spots[xx][yy]);
-									}
+							if (board[i][j].isFull()) {
+								if (i + 1 < 4) {
+									toCheck[i + 1][j] = true;
+								}
+								if (i - 1 > -1) {
+									toCheck[i - 1][j] = true;
+								}
+								if (j + 1 < 5) {
+									toCheck[i][j + 1] = true;
+								}
+								if (j - 1 > -1) {
+									toCheck[i][j - 1] = true;
+								}
+								if (i + 1 < 4 && j + 1 < 5) {
+									toCheck[i + 1][j + 1] = true;
+								}
+								if (i + 1 < 4 && j - 1 > -1) {
+									toCheck[i + 1][j - 1] = true;
+								}
+								if (i - 1 > -1 && j + 1 < 5) {
+									toCheck[i - 1][j + 1] = true;
+								}
+								if (i - 1 > -1 && j - 1 > -1) {
+									toCheck[i - 1][j - 1] = true;
 								}
 							}
-							if (std::find(spots_to_check.begin(), spots_to_check.end(), false) != spots_to_check.end()) {
-								//adjacent_spots[i][j] = true;
-							}
-							else {
+						}
+					}
+					for (int i = 0; i < 4; i++) {
+						for (int j = 0; j < 5; j++) {
+							if (toCheck[i][j] == false) {
 								placementSpots[i][j] = false;
 							}
 						}
 					}
-					//for (int i = 0; i < 4; i++) {
-					//	for (int j = 0; j < 5; j++) {
-					//		if (placementSpots[i][j] != adjacent_spots[i][j]) {
-					//			placementSpots[i][j] = false;
-					//		}
-					//	}
-					//}
 				}
 			}
 		}
@@ -159,13 +186,13 @@ std::vector<std::vector<bool>> determinePlacementSpots(std::vector<std::vector<D
 	return placementSpots;
 }
 
+// Fills pattern cards with info from JSON
 void fillFrameArray(boost::property_tree::ptree& pt, std::vector<PatternCard>* frameData, int index, int subIndex, int& subSubIndex) {
 
 	if (pt.empty()) {
 		if (subSubIndex == 5) {
 			subSubIndex = 0;
 		}
-		// std::vector<std::vector<std::vector<Die>>>& frameData
 		std::string thing = pt.data();
 		frameData->at(index).setIndex(thing, subIndex, subSubIndex);
 		subSubIndex = subSubIndex + 1;

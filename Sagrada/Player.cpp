@@ -21,6 +21,10 @@ void Player::setTokens(int newTokens) {
     favorTokens = newTokens;
 }
 
+void Player::setDieInBoard(int x, int y, std::string newDie) {
+    board.setDie(newDie, x, y);
+}
+
 std::string Player::toString() {
     return std::to_string(id) + ": " + privateObjective + " " + board.diceToString() + " " + std::to_string(favorTokens);
 }

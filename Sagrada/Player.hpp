@@ -8,6 +8,7 @@ public:
     void setFrame(std::vector<std::vector<Die>> windowFrame);
     void setPrivateObjective(std::string privObj);
     void setTokens(int newTokens);
+    void setDieInBoard(int x, int y, std::string newDie);
     std::string toString();
     bool boardIsEmpty();
     int getTokens();
