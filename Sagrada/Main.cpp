@@ -18,6 +18,7 @@
 #include "PatternCard.hpp"
 #include "Player.hpp"
 #include "PlayerBoard.hpp"
+#include "PublicObjective.hpp"
 #include "RoundTrack.hpp"
 
 int SCREEN_WIDTH = 1120;
@@ -56,6 +57,7 @@ int main() {
 	std::vector<Player> players = { Player(1), Player(2), Player(3), Player(4) };
 	std::vector<std::string> private_colors = {"Blue", "Red", "Green", "Purple", "Yellow"};
 	std::shuffle(std::begin(private_colors), std::end(private_colors), std::mt19937(static_cast<uint32_t>(time(0))));
+	// Only done on host computer
 	for (int i = 0; i < players.size(); i++) {
 		players[i].setPrivateObjective(private_colors[0]);
 		private_colors.erase(private_colors.begin());
@@ -63,8 +65,10 @@ int main() {
 
 	std::random_device rd;
 	std::mt19937 mt(rd());
-	std::uniform_real_distribution<double> dist(0.0, 12.0); // 0 to 11
+	std::uniform_real_distribution<double> patternDist(0.0, 12.0); // 0 to 11
 	std::vector<PatternCard> selectedPatternCards;
+	std::uniform_real_distribution<double> objectiveDist(0.0, 10.0); // 0 to 9
+	std::vector<PublicObjective> selectedPublicObjectives;
 
 	DicePool dicePool;
 	DiceBag diceBag;
@@ -77,10 +81,11 @@ int main() {
 	std::vector<sf::RectangleShape> dicePoolShapes;
 	int selectedDieIndex = -1;
 
+	// This only needs to be done on host computer, then sent out to player computers
 	for (int i = 0; i < 8; i++) {
-		int randomNumber = dist(mt);
+		int randomNumber = patternDist(mt);
 		while (windowFrames.find(std::to_string(randomNumber)) == windowFrames.not_found()) {
-			randomNumber = dist(mt);
+			randomNumber = patternDist(mt);
 		}
 		for (int j = 0; j < 2; j++) {
 			selectedPatternCards.insert(selectedPatternCards.end(), PatternCard());
@@ -97,6 +102,19 @@ int main() {
 		windowFrames.erase(std::to_string(randomNumber));
 	}
 
+	// Same thing here - host only
+	for (int i = 0; i < 3; i++) {
+		int randomNumber = objectiveDist(mt);
+		while (publicObjectives.find(std::to_string(randomNumber)) == publicObjectives.not_found()) {
+			randomNumber = patternDist(mt);
+		}
+		selectedPublicObjectives.insert(selectedPublicObjectives.end(), PublicObjective());
+		selectedPublicObjectives.back().setName(publicObjectives.get_child(std::to_string(randomNumber)).get<std::string>("Name"));
+		selectedPublicObjectives.back().setDescription(publicObjectives.get_child(std::to_string(randomNumber)).get<std::string>("Description"));
+		selectedPublicObjectives.back().setPoints(publicObjectives.get_child(std::to_string(randomNumber)).get<std::string>("Points"));
+	}
+
+	// draw window loop
     while (window.isOpen()) {
         sf::Event event;
         while (window.pollEvent(event))
@@ -114,6 +132,7 @@ int main() {
 		window.setSize(sf::Vector2u(SCREEN_WIDTH, SCREEN_HEIGHT));
         window.clear();
 		window.draw(background);
+		// main start page
 		if (playerCount == 0) {
 			sf::Text playerText[3];
 			playerText[0].setFont(font);
@@ -197,6 +216,7 @@ int main() {
 			window.draw(otherPlayerText[2]);
 			window.draw(logoRect);
 		}
+		// select player boards
 		else if (playGame != playerCount - 1) {
 			while (players.size() != playerCount) { // remove extra players if needed
 				players.pop_back();
@@ -260,6 +280,7 @@ int main() {
 				playerOrder = { 1, 2, 3, 4, 4, 3, 2, 1, 0 };
 			}
 		}
+		// play the game!
 		else {
 			if (dicePool.isEmpty() && currentTurn == 1) {
 				dicePool.roll(&diceBag, playerCount);
@@ -267,7 +288,7 @@ int main() {
 			if (currentPlayerIsDone == 1 || currentPlayer == 0) {
 				if (currentTurn == 10 && currentPlayer == 0) {
 					// the game is over
-					window.draw(sf::RectangleShape());
+					std::cout << "Done!" << std::endl;
 					break;
 				} else if (currentPlayer == 0) {
 					// reset draft pool, add to round track
@@ -321,7 +342,6 @@ int main() {
 				currentPlayerIsDone = 0;
 			}
 			else if (currentPlayer != 0) {
-				//players[0].setDieInBoard(0, 0, "Red 4");
 				// draw player board within boardOutline
 				sf::ConvexShape boardOutline;
 				float percentage = (float)SCREEN_WIDTH / (float)DEFAULT_SCREEN_WIDTH;
@@ -332,6 +352,40 @@ int main() {
 				boardOutline = RoundedRectangle(SCREEN_WIDTH - margin - boardWidth, 0 + margin,
 					boardWidth, boardHeight, 10, darkGray, 5, sf::Color::Black);
 				window.draw(boardOutline);
+				// draw the roundtrack
+				sf::ConvexShape roundTrackFrame;
+				float roundTrackHeight = 163.0 * ((double)SCREEN_WIDTH / (double)DEFAULT_SCREEN_WIDTH);
+				roundTrackFrame = RoundedRectangle(SCREEN_WIDTH - margin - boardWidth, 0 + boardHeight + 2.0 * margin,
+					boardWidth, roundTrackHeight, 10, darkGray, 5, sf::Color::Black);
+				window.draw(roundTrackFrame);
+				for (int d = 0; d < 10; d++) {
+					float roundTrackDieX, roundTrackDieY, roundTrackDieSize;
+					roundTrackDieSize = roundTrackHeight / 2.6;
+					sf::Color roundTrackDieOutlineColor = mediumGray;
+					Die roundTrackDie;
+					if (d < 5) {
+						roundTrackDieX = roundTrackFrame.getGlobalBounds().left + margin * 4.5 * (d + 0.2);
+						roundTrackDieY = roundTrackFrame.getGlobalBounds().top + margin * 0.9;
+					}
+					else {
+						roundTrackDieX = roundTrackFrame.getGlobalBounds().left + margin * 4.5 * (d + 0.2 - 5);
+						roundTrackDieY = roundTrackFrame.getGlobalBounds().top + roundTrackFrame.getGlobalBounds().height / 1.9;
+					}
+					if (roundTrack.getRoundTrack().size() > d) {
+						roundTrackDie = roundTrack.getRoundTrack().at(d).at(0);
+					}
+					sf::RectangleShape roundTrackDieOutline;
+					roundTrackDieOutline.setPosition(roundTrackDieX, roundTrackDieY);
+					roundTrackDieOutline.setSize(sf::Vector2f(roundTrackDieSize, roundTrackDieSize));
+					if (roundTrackDieOutline.getGlobalBounds().contains((sf::Vector2f)sf::Mouse::getPosition(window))) {
+						if (sf::Mouse::isButtonPressed(sf::Mouse::Left)) { //switch between selected die
+							// TODO: add option to skip turn
+						}
+						// color on hover
+						roundTrackDieOutlineColor = sf::Color::Yellow;
+					}
+					drawDie(roundTrackDie, roundTrackDieSize, roundTrackDieX, roundTrackDieY, roundTrackDieOutlineColor, Die(), &window);
+				}
 				std::vector <int> chosenDie = drawBoard(players[currentPlayer - 1].getBoard().getDice(), &window, boardOutline, dicePool.getDie(selectedDieIndex));
 				if (chosenDie.size() == 2) { // if die has been clicked (place die in board)
 					players[currentPlayer - 1].setDieInBoard(chosenDie[0], chosenDie[1], dicePool.getDie(selectedDieIndex));
@@ -381,24 +435,24 @@ int main() {
 				window.draw(currentPlayerText);
 				// objective + tool cards are 63x88
 				sf::ConvexShape objectiveCards[3];
-				float objectiveCardWidth = 63.0 * 2.05 * ((double)SCREEN_WIDTH / (double)DEFAULT_SCREEN_WIDTH);
-				float objectiveCardHeight = 88.0 * 2.05 * ((double)SCREEN_WIDTH / (double)DEFAULT_SCREEN_WIDTH);
+				float objectiveCardWidth = 290.0 * ((double)SCREEN_WIDTH / (double)DEFAULT_SCREEN_WIDTH);
+				float objectiveCardHeight = 181.0 * ((double)SCREEN_WIDTH / (double)DEFAULT_SCREEN_WIDTH);
 				objectiveCards[0] = RoundedRectangle(SCREEN_WIDTH - 2 * margin - boardWidth - objectiveCardWidth, 0 + margin, objectiveCardWidth, objectiveCardHeight, 10, darkGray, 5, sf::Color::Black);
 				objectiveCards[1] = RoundedRectangle(SCREEN_WIDTH - 2 * margin - boardWidth - objectiveCardWidth, 0 + 2 * margin + objectiveCardHeight, objectiveCardWidth, objectiveCardHeight, 10, darkGray, 5, sf::Color::Black);
 				objectiveCards[2] = RoundedRectangle(SCREEN_WIDTH - 2 * margin - boardWidth - objectiveCardWidth, 0 + 3 * margin + 2 * objectiveCardHeight, objectiveCardWidth, objectiveCardHeight, 10, darkGray, 5, sf::Color::Black);
-				sf::ConvexShape toolCards[3];
+				/*sf::ConvexShape toolCards[3];
 				toolCards[0] = RoundedRectangle(SCREEN_WIDTH - 3 * margin - boardWidth - 2 * objectiveCardWidth, 0 + margin, objectiveCardWidth, objectiveCardHeight, 10, beige, 5, sf::Color::Black);
 				toolCards[1] = RoundedRectangle(SCREEN_WIDTH - 3 * margin - boardWidth - 2 * objectiveCardWidth, 0 + 2 * margin + objectiveCardHeight, objectiveCardWidth, objectiveCardHeight, 10, beige, 5, sf::Color::Black);
-				toolCards[2] = RoundedRectangle(SCREEN_WIDTH - 3 * margin - boardWidth - 2 * objectiveCardWidth, 0 + 3 * margin + 2 * objectiveCardHeight, objectiveCardWidth, objectiveCardHeight, 10, beige, 5, sf::Color::Black);
+				toolCards[2] = RoundedRectangle(SCREEN_WIDTH - 3 * margin - boardWidth - 2 * objectiveCardWidth, 0 + 3 * margin + 2 * objectiveCardHeight, objectiveCardWidth, objectiveCardHeight, 10, beige, 5, sf::Color::Black);*/
 				window.draw(objectiveCards[0]);
 				window.draw(objectiveCards[1]);
 				window.draw(objectiveCards[2]);
-				window.draw(toolCards[0]);
-				window.draw(toolCards[1]);
-				window.draw(toolCards[2]);
+				//window.draw(toolCards[0]);
+				//window.draw(toolCards[1]);
+				//window.draw(toolCards[2]);
 				sf::ConvexShape draftPool;
 				float draftPoolWidth = 300.0 * ((double)SCREEN_WIDTH / (double)DEFAULT_SCREEN_WIDTH);
-				float draftPoolHeight = 583.0 * ((double)SCREEN_WIDTH / (double)DEFAULT_SCREEN_WIDTH);
+				float draftPoolHeight = 584.0 * ((double)SCREEN_WIDTH / (double)DEFAULT_SCREEN_WIDTH);
 				draftPool = RoundedRectangle(0 + margin, 0 + margin, draftPoolWidth, draftPoolHeight, 10, darkGray, 5, sf::Color::Black);
 				window.draw(draftPool);
 				sf::RectangleShape draftPoolOutline; // used for setting the position of the dice, don't draw
@@ -458,6 +512,10 @@ int main() {
 						}
 						if (sf::Mouse::isButtonPressed(sf::Mouse::Right) && selectedDieIndex != -1) { // right-button press deselects die
 							selectedDieIndex = -1;
+						}
+						else if (sf::Mouse::isButtonPressed(sf::Mouse::Right)) { // If right clicking with no die selected, skips your turn
+							currentPlayerIsDone = 1;
+							Sleep(sleepTime);
 						}
 					}
 				}

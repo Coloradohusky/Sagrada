@@ -1,4 +1,5 @@
 #include "Die.hpp"
+#include "Custom.hpp"
 #include <string>
 #include <random>
 
@@ -76,6 +77,24 @@ bool Die::isFull() {
 
 std::string Die::getColor() {
 	return color;
+}
+
+sf::Color Die::getFillColor() {
+	if (color == "Blue") {
+		return blue;
+	}
+	else if (color == "Red") {
+		return red;
+	}
+	else if (color == "Green") {
+		return green;
+	}
+	else if (color == "Purple") {
+		return purple;
+	}
+	else if (color == "Yellow") {
+		return yellow;
+	}
 }
 
 int Die::getNumber() {
