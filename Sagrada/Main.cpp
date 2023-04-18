@@ -334,6 +334,7 @@ int main() {
 						dicePool.removeDie(r);
 					}
 					dicePool.roll(&diceBag, playerCount);
+					dicePoolShapes.clear();
 					// set new player order
 					if (playerOrder[1] == 1) {
 						if (playerCount == 2) {
@@ -486,7 +487,7 @@ int main() {
 				sf::Text objectiveCardNames[3];
 				sf::Text objectiveCardDescriptions[3];
 				sf::Text objectiveCardPoints[3];
-				for (int i = 0; i < 3; i++) {
+				for (int i = 0; i < 3; i++) { // draw the objective card text
 					objectiveCardNames[i].setFont(font);
 					objectiveCardNames[i].setStyle(sf::Text::Bold);
 					objectiveCardNames[i].setLetterSpacing(0.48);
@@ -541,7 +542,7 @@ int main() {
 				sf::RectangleShape draftPoolOutline; // used for setting the position of the dice, don't draw
 				float diceMargin = margin * 1.75;
 				draftPoolOutline.setPosition(0 + diceMargin, 0 + diceMargin);
-				draftPoolOutline.setSize(sf::Vector2f(draftPool.getLocalBounds().width - diceMargin * 1.25, draftPool.getLocalBounds().height - diceMargin * 1.25));
+				draftPoolOutline.setSize(sf::Vector2f(draftPool.getGlobalBounds().width - diceMargin * 1.25, draftPool.getGlobalBounds().height - diceMargin * 1.25));
 				for (int d = 0; d < dicePool.size(); d++) { // draw each die in the draft pool
 					float diceSize = 65.0 * ((double)SCREEN_WIDTH / (double)DEFAULT_SCREEN_WIDTH);
 					float x, y;
@@ -557,6 +558,10 @@ int main() {
 						for (int i = 0; i < dicePoolShapes.size(); i++) { // make sure the dice doesn't intersect
 							sf::RectangleShape r = dicePoolShapes[i];
 							sf::FloatRect checkGlobal = r.getGlobalBounds();
+							checkGlobal.left *= ((double)SCREEN_WIDTH / (double)DEFAULT_SCREEN_WIDTH);
+							checkGlobal.top *= ((double)SCREEN_WIDTH / (double)DEFAULT_SCREEN_WIDTH);
+							checkGlobal.width *= ((double)SCREEN_WIDTH / (double)DEFAULT_SCREEN_WIDTH);
+							checkGlobal.height *= ((double)SCREEN_WIDTH / (double)DEFAULT_SCREEN_WIDTH);
 							checkGlobal.left -= 9.0;
 							checkGlobal.top -= 9.0;
 							checkGlobal.width += 18.0;
@@ -567,15 +572,15 @@ int main() {
 							}
 						}
 						if (!intersects) {
-							dicePoolShapes.push_back(drawDie(dicePool.getDie(d), diceSize, x, y, mediumGray, Die(), &window));
+							dicePoolShapes.push_back(drawDie(dicePool.getDie(d), diceSize, x / ((double)SCREEN_WIDTH / (double)DEFAULT_SCREEN_WIDTH), y / ((double)SCREEN_WIDTH / (double)DEFAULT_SCREEN_WIDTH), mediumGray, Die(), &window));
 						}
 						else { // redo if it intersects
 							d--;
 						}
 					}
 					else { // if the dice have already been added to the draft pool
-						x = dicePoolShapes[d].getGlobalBounds().left * ((double)SCREEN_WIDTH / (double)DEFAULT_SCREEN_WIDTH);;
-						y = dicePoolShapes[d].getGlobalBounds().top * ((double)SCREEN_WIDTH / (double)DEFAULT_SCREEN_WIDTH);;
+						x = dicePoolShapes[d].getGlobalBounds().left * ((double)SCREEN_WIDTH / (double)DEFAULT_SCREEN_WIDTH);
+						y = dicePoolShapes[d].getGlobalBounds().top * ((double)SCREEN_WIDTH / (double)DEFAULT_SCREEN_WIDTH);
 						sf::RectangleShape currDice;
 						currDice.setPosition(x, y);
 						currDice.setSize(sf::Vector2f(diceSize, diceSize));
