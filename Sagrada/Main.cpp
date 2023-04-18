@@ -27,6 +27,7 @@ int main();
 
 int main() {
 	int playerCount = 0;
+	int inMenu = 0;
 
 	sf::Font font;
 	font.loadFromFile("arial.ttf");
@@ -114,8 +115,8 @@ int main() {
 		window.setSize(sf::Vector2u(SCREEN_WIDTH, SCREEN_HEIGHT));
         window.clear();
 		window.draw(background);
-		if (playerCount == 0) {
-			sf::Text playerText[3];
+		if (playerCount == 0 && inMenu == 0) {
+			sf::Text playerText[4];
 			playerText[0].setFont(font);
 			playerText[0].setString("players");
 			playerText[0].setCharacterSize(24.0 * ((double)SCREEN_WIDTH / (double)DEFAULT_SCREEN_WIDTH));
@@ -123,7 +124,7 @@ int main() {
 			playerText[0].setStyle(sf::Text::Bold);
 			playerText[1] = playerText[0];
 			playerText[2] = playerText[0];
-			sf::Text otherPlayerText[3];
+			sf::Text otherPlayerText[4];
 			otherPlayerText[0].setFont(font);
 			otherPlayerText[0].setCharacterSize(125.0 * ((double)SCREEN_WIDTH / (double)DEFAULT_SCREEN_WIDTH));
 			otherPlayerText[0].setFillColor(sf::Color::Black);
@@ -134,7 +135,7 @@ int main() {
 			int buttonHeight = SCREEN_HEIGHT / 3.125;
 			int buttonMargin = SCREEN_WIDTH / 50;
 			int middleButtonXCoord = (SCREEN_WIDTH / 2) - (buttonWidth / 2);
-			sf::ConvexShape playerButtons[3];
+			sf::ConvexShape playerButtons[4];
 			playerButtons[0] = RoundedRectangle(middleButtonXCoord - buttonWidth - buttonMargin, SCREEN_HEIGHT / 1.8,
 				buttonWidth, buttonHeight, 10,
 				darkGray, 2, sf::Color::Black);
@@ -143,6 +144,8 @@ int main() {
 				darkGray, 2, sf::Color::Black);
 			playerButtons[2] = RoundedRectangle(middleButtonXCoord + buttonWidth + buttonMargin, SCREEN_HEIGHT / 1.8,
 				buttonWidth, buttonHeight, 10,
+				darkGray, 2, sf::Color::Black);
+			playerButtons[3] = RoundedRectangle(4, 4, buttonWidth / 1.5, buttonHeight / 3, 10,
 				darkGray, 2, sf::Color::Black);
 			for (int i = 0; i < 3; i++) {
 				sf::FloatRect textBounds = playerText[i].getLocalBounds();
@@ -165,6 +168,17 @@ int main() {
 			playerButtons[0].setOutlineColor(sf::Color::Black);
 			playerButtons[1].setOutlineColor(sf::Color::Black);
 			playerButtons[2].setOutlineColor(sf::Color::Black);
+			playerButtons[3].setOutlineColor(sf::Color::Black);
+
+			playerText[3].setFont(font);
+			playerText[3].setCharacterSize(50.0 * ((double)SCREEN_WIDTH / (double)DEFAULT_SCREEN_WIDTH));
+			playerText[3].setFillColor(sf::Color::Black);
+			playerText[3].setStyle(sf::Text::Bold);
+			playerText[3].setString("Help?");
+			sf::FloatRect textBounds = playerText[3].getLocalBounds();
+			sf::FloatRect shapeBounds = playerButtons[3].getLocalBounds();
+			playerText[3].setPosition(shapeBounds.left + shapeBounds.width / 2 - textBounds.width / 2, textBounds.height / 16);
+
 			if (MouseInConvexShape(playerButtons[0], &window)) {
 				if (sf::Mouse::isButtonPressed(sf::Mouse::Left)) {
 					playerCount = 2;
@@ -186,16 +200,39 @@ int main() {
 				}
 				playerButtons[2].setOutlineColor(sf::Color::Yellow);
 			}
+			if (MouseInConvexShape(playerButtons[3], &window)) {
+				if (sf::Mouse::isButtonPressed(sf::Mouse::Left)) {
+					inMenu = 1;
+					Sleep(sleepTime);
+				}
+				playerButtons[3].setOutlineColor(sf::Color::Yellow);
+			}
 			window.draw(playerButtons[0]);
 			window.draw(playerButtons[1]);
 			window.draw(playerButtons[2]);
+			window.draw(playerButtons[3]);
 			window.draw(playerText[0]);
 			window.draw(playerText[1]);
 			window.draw(playerText[2]);
+			window.draw(playerText[3]);
 			window.draw(otherPlayerText[0]);
 			window.draw(otherPlayerText[1]);
 			window.draw(otherPlayerText[2]);
 			window.draw(logoRect);
+		}
+		else if (inMenu == 1) {
+			sf::Text menuText[2];
+
+			menuText[0].setFont(font);
+			menuText[0].setCharacterSize(25.0 * ((double)SCREEN_WIDTH / (double)DEFAULT_SCREEN_WIDTH));
+			menuText[0].setFillColor(sf::Color::Black);
+			menuText[0].setStyle(sf::Text::Bold);
+			menuText[0].setString("Here are the rules!");
+			menuText[0].setPosition(10, 10);
+
+			window.draw(menuText[0]);
+			//window.draw(menuText[1]);
+			//inMenu = 0;
 		}
 		else if (playGame != playerCount - 1) {
 			while (players.size() != playerCount) { // remove extra players if needed
