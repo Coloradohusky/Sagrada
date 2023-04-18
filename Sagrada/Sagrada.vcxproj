@@ -143,6 +143,7 @@
     <ClCompile Include="PatternCard.cpp" />
     <ClCompile Include="Player.cpp" />
     <ClCompile Include="PlayerBoard.cpp" />
+    <ClCompile Include="PublicObjective.cpp" />
     <ClCompile Include="RoundTrack.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -153,6 +154,7 @@
     <ClInclude Include="PatternCard.hpp" />
     <ClInclude Include="Player.hpp" />
     <ClInclude Include="PlayerBoard.hpp" />
+    <ClInclude Include="PublicObjective.hpp" />
     <ClInclude Include="RoundTrack.hpp" />
   </ItemGroup>
   <ItemGroup>

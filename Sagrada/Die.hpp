@@ -1,4 +1,5 @@
 #pragma once
+#include <SFML/Graphics.hpp>
 #include <iostream>
 
 class Die
@@ -15,6 +16,7 @@ public:
 	bool isEmpty();
 	bool isFull();
 	std::string getColor();
+	sf::Color getFillColor();
 	int getNumber();
 private:
 	std::string color;
