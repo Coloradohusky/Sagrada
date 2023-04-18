@@ -106,6 +106,7 @@ int main() {
 	// Same thing here - host only
 	for (int i = 0; i < 3; i++) {
 		int randomNumber = objectiveDist(mt);
+		randomNumber = 3;
 		while (publicObjectives.find(std::to_string(randomNumber)) == publicObjectives.not_found()) {
 			randomNumber = patternDist(mt);
 		}
@@ -113,6 +114,7 @@ int main() {
 		selectedPublicObjectives.back().setName(publicObjectives.get_child(std::to_string(randomNumber)).get<std::string>("Name"));
 		selectedPublicObjectives.back().setDescription(publicObjectives.get_child(std::to_string(randomNumber)).get<std::string>("Description"));
 		selectedPublicObjectives.back().setPoints(publicObjectives.get_child(std::to_string(randomNumber)).get<std::string>("Points"));
+		publicObjectives.erase(std::to_string(randomNumber));
 	}
 
 	// draw window loop
@@ -257,7 +259,7 @@ int main() {
 				players.pop_back();
 			}
 			for (int i = 0; i < playerCount; i++) {
-				if (players[i].boardIsEmpty()) {
+				if (players[i].boardIsEmpty()) { // for each player, let them choose their boards
 					int selected = 0;
 					selected = selected + drawFrame(selectedPatternCards[i * 4 + 0].getName(), selectedPatternCards[i * 4 + 0].getDice(), selectedPatternCards[i * 4 + 0].getTokens(), &window, 1);
 					selected = selected + drawFrame(selectedPatternCards[i * 4 + 1].getName(), selectedPatternCards[i * 4 + 1].getDice(), selectedPatternCards[i * 4 + 1].getTokens(), &window, 2);
@@ -468,7 +470,6 @@ int main() {
 				currentPlayerText.setCharacterSize(40.0 * ((double)SCREEN_WIDTH / (double)DEFAULT_SCREEN_WIDTH));
 				currentPlayerText.setPosition(SCREEN_WIDTH - margin * 1.4 - boardWidth / 1.5, 0 - margin * 2.8 + boardHeight);
 				window.draw(currentPlayerText);
-				// objective + tool cards are 63x88
 				sf::ConvexShape objectiveCards[3];
 				float objectiveCardWidth = 290.0 * ((double)SCREEN_WIDTH / (double)DEFAULT_SCREEN_WIDTH);
 				float objectiveCardHeight = 181.0 * ((double)SCREEN_WIDTH / (double)DEFAULT_SCREEN_WIDTH);
@@ -479,12 +480,59 @@ int main() {
 				toolCards[0] = RoundedRectangle(SCREEN_WIDTH - 3 * margin - boardWidth - 2 * objectiveCardWidth, 0 + margin, objectiveCardWidth, objectiveCardHeight, 10, beige, 5, sf::Color::Black);
 				toolCards[1] = RoundedRectangle(SCREEN_WIDTH - 3 * margin - boardWidth - 2 * objectiveCardWidth, 0 + 2 * margin + objectiveCardHeight, objectiveCardWidth, objectiveCardHeight, 10, beige, 5, sf::Color::Black);
 				toolCards[2] = RoundedRectangle(SCREEN_WIDTH - 3 * margin - boardWidth - 2 * objectiveCardWidth, 0 + 3 * margin + 2 * objectiveCardHeight, objectiveCardWidth, objectiveCardHeight, 10, beige, 5, sf::Color::Black);*/
-				window.draw(objectiveCards[0]);
-				window.draw(objectiveCards[1]);
-				window.draw(objectiveCards[2]);
 				//window.draw(toolCards[0]);
 				//window.draw(toolCards[1]);
 				//window.draw(toolCards[2]);
+				sf::Text objectiveCardNames[3];
+				sf::Text objectiveCardDescriptions[3];
+				sf::Text objectiveCardPoints[3];
+				for (int i = 0; i < 3; i++) {
+					objectiveCardNames[i].setFont(font);
+					objectiveCardNames[i].setStyle(sf::Text::Bold);
+					objectiveCardNames[i].setLetterSpacing(0.48);
+					objectiveCardNames[i].setFillColor(sf::Color::Black);
+					objectiveCardDescriptions[i].setFont(font);
+					objectiveCardDescriptions[i].setStyle(sf::Text::Bold);
+					objectiveCardDescriptions[i].setLetterSpacing(0.5);
+					objectiveCardDescriptions[i].setFillColor(sf::Color::Black);
+					objectiveCardPoints[i].setFont(font);
+					objectiveCardPoints[i].setStyle(sf::Text::Bold);
+					objectiveCardPoints[i].setLetterSpacing(0.6);
+					objectiveCardPoints[i].setFillColor(sf::Color::Black);
+					objectiveCardNames[i].setString(selectedPublicObjectives[i].getName());
+					int occur = 0;
+					std::string description = selectedPublicObjectives[i].getDescription();
+					for (int i = 0; i < description.length(); i++) {
+						if (description.at(i) == ' ') {
+							occur += 1;
+						}
+						if (description.at(10) == '&') {
+							if (occur == 5) {
+								occur = i;
+								break;
+							}
+						}
+						else if (occur == 3) {
+							occur = i;
+							break;
+						}
+					}
+					description[occur] = '\n';
+					objectiveCardDescriptions[i].setString(description);
+					objectiveCardPoints[i].setString(selectedPublicObjectives[i].getPoints() + " per");
+					objectiveCardNames[i].setPosition(objectiveCards[i].getGlobalBounds().left + margin / 1.8, objectiveCards[i].getGlobalBounds().top + margin / 2.0);
+					objectiveCardNames[i].setCharacterSize(29.0 * ((double)SCREEN_WIDTH / (double)DEFAULT_SCREEN_WIDTH));
+					objectiveCardDescriptions[i].setPosition(objectiveCards[i].getGlobalBounds().left + margin / 2.0, 
+						objectiveCardNames[i].getGlobalBounds().top + objectiveCardNames[i].getGlobalBounds().height + margin / 1.15);
+					objectiveCardDescriptions[i].setCharacterSize(25.0 * ((double)SCREEN_WIDTH / (double)DEFAULT_SCREEN_WIDTH));
+					objectiveCardPoints[i].setPosition(objectiveCards[i].getGlobalBounds().left + margin / 2.0, 
+						objectiveCardDescriptions[i].getGlobalBounds().top + objectiveCardDescriptions[i].getGlobalBounds().height + margin / 1.25);
+					objectiveCardPoints[i].setCharacterSize(27.0 * ((double)SCREEN_WIDTH / (double)DEFAULT_SCREEN_WIDTH));
+					window.draw(objectiveCards[i]);
+					window.draw(objectiveCardNames[i]);
+					window.draw(objectiveCardDescriptions[i]);
+					window.draw(objectiveCardPoints[i]);
+				}
 				sf::ConvexShape draftPool;
 				float draftPoolWidth = 300.0 * ((double)SCREEN_WIDTH / (double)DEFAULT_SCREEN_WIDTH);
 				float draftPoolHeight = 584.0 * ((double)SCREEN_WIDTH / (double)DEFAULT_SCREEN_WIDTH);
@@ -547,6 +595,7 @@ int main() {
 						}
 						if (sf::Mouse::isButtonPressed(sf::Mouse::Right) && selectedDieIndex != -1) { // right-button press deselects die
 							selectedDieIndex = -1;
+							Sleep(sleepTime);
 						}
 						else if (sf::Mouse::isButtonPressed(sf::Mouse::Right)) { // If right clicking with no die selected, skips your turn
 							currentPlayerIsDone = 1;
@@ -555,7 +604,6 @@ int main() {
 					}
 				}
 			}
-			// until max playercount is reached, then set back to 1 and increment currentTurn by 1
 		}
         window.display();
     }
