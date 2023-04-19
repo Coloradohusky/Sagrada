@@ -11,15 +11,18 @@ public:
     void setTokens(int newTokens);
     void setDieInBoard(int x, int y, std::string newDie);
     void setDieInBoard(int x, int y, Die newDie);
-    std::string toString();
+    void setPoints(int points);
+    void addPoints(int points);
     bool boardIsEmpty();
     int getTokens();
     std::string getPrivateObjective();
     PlayerBoard getBoard();
+    int getPoints();
 private:
     int id;
     int favorTokens;
     std::string privateObjective;
     PlayerBoard board;
+    int totalPoints;
 };
 

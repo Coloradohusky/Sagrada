@@ -6,7 +6,7 @@
 class DicePool
 {
 public:
-	bool isEmpty();
+	bool isCompletelyEmpty();
 	void roll(DiceBag* diceBag, int playerCount);
 	int size();
 	sf::Color getDieColor(int index);

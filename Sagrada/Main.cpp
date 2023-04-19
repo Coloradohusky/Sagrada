@@ -318,16 +318,12 @@ int main() {
 			}
 		}
 		// play the game!
-		else {
-			if (dicePool.isEmpty() && currentTurn == 1) {
+		else if (!(currentTurn == 10 && currentPlayer == 0)) {
+			if (dicePool.isCompletelyEmpty() && currentTurn == 1) {
 				dicePool.roll(&diceBag, playerCount);
 			}
 			if (currentPlayerIsDone == 1 || currentPlayer == 0) {
-				if (currentTurn == 10 && currentPlayer == 0) {
-					// the game is over
-					std::cout << "Done!" << std::endl;
-					break;
-				} else if (currentPlayer == 0) {
+				if (currentPlayer == 0) {
 					// reset draft pool, add to round track
 					roundTrack.setRoundTrack(dicePool, currentTurn);
 					for (int r = 0; r < dicePool.size(); r++) {
@@ -609,6 +605,16 @@ int main() {
 					}
 				}
 			}
+		}
+		// the game is over - tally up points
+		else {
+			for (int i = 0; i < playerCount; i++) {
+				// add up from all three public objectives
+				players.at(i).setPoints(scoreBoard(players.at(i).getBoard(), selectedPublicObjectives));
+				std::cout << "Player " << i + 1 << ":\t" << players.at(i).getPoints() << std::endl;
+			}
+			std::cout << "Done!" << std::endl;
+			break;
 		}
         window.display();
     }

@@ -13,6 +13,16 @@ Die::Die(std::string newColor) {
 	number = 0;
 }
 
+Die::Die(int newNumber) {
+	color = "";
+	number = newNumber;
+}
+
+Die::Die(std::string newColor, int newNumber) {
+	color = newColor;
+	number = newNumber;
+}
+
 void Die::roll() {
 	std::random_device rd;
 	std::mt19937 e2(rd());
@@ -61,8 +71,16 @@ std::string Die::toString() {
 	return std::string();
 }
 
-bool Die::isEmpty() {
+
+bool Die::isCompletelyEmpty() {
 	if (color == "" && number == 0) {
+		return true;
+	}
+	return false;
+}
+
+bool Die::isEmpty() {
+	if (color == "" || number == 0) {
 		return true;
 	}
 	return false;

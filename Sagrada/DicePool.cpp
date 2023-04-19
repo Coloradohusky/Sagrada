@@ -1,7 +1,7 @@
 #include "DicePool.hpp"
 #include "Custom.hpp"
 
-bool DicePool::isEmpty() {
+bool DicePool::isCompletelyEmpty() {
 	return draftPool.empty();
 }
 

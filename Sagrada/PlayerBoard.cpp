@@ -21,6 +21,17 @@ std::vector<std::vector<Die>> PlayerBoard::getDice() {
     return dice;
 }
 
+bool PlayerBoard::isCompletelyEmpty() {
+    for (int i = 0; i < 4; i++) {
+        for (int j = 0; j < 5; j++) {
+            if (!dice[i][j].isCompletelyEmpty()) {
+                return false;
+            }
+        }
+    }
+    return true;
+}
+
 bool PlayerBoard::isEmpty() {
     for (int i = 0; i < 4; i++) {
         for (int j = 0; j < 5; j++) {
@@ -32,10 +43,30 @@ bool PlayerBoard::isEmpty() {
     return true;
 }
 
-std::string PlayerBoard::diceToString() {
-    return dice[0][4].toString(); // TODO
-}
-
 void PlayerBoard::setDie(std::string data, int index, int subIndex) {
     dice[index][subIndex].set(data);
+}
+
+int PlayerBoard::countEmpty() {
+    int empty = 0;
+    for (int i = 0; i < dice.size(); ++i) {
+        for (int j = 0; j < dice[i].size(); ++j) {
+            if (dice[i][j].isEmpty()) {
+                empty++;
+            }
+        }
+    }
+    return empty;
+}
+
+int PlayerBoard::countValue(int value) {
+    int count = 0;
+    for (int i = 0; i < 4; i++) {
+        for (int j = 0; j < 5; j++) {
+            if (dice[i][j].getNumber() == value) {
+                count++;
+            }
+        }
+    }
+    return count;
 }

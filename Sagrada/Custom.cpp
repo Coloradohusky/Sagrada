@@ -362,3 +362,56 @@ sf::RectangleShape drawDie(Die currentDie, float size, float x, float y, sf::Col
 	}
 	return square;
 }
+
+int scoreBoard(PlayerBoard board, std::vector<PublicObjective> selectedPublicObjectives) {
+	int pointTotal = 0;
+	for (int j = 0; j < selectedPublicObjectives.size(); j++) {
+		if (selectedPublicObjectives.at(j).getName() == "Light Shades") {
+			// Sets of 1 & 2 values anywhere (2 pts each)
+			int ones = 0; int twos = 0;
+			ones = board.countValue(1);
+			twos = board.countValue(2);
+			pointTotal += std::min(ones, twos) * std::stoi(selectedPublicObjectives.at(j).getPoints());
+		}
+		else if (selectedPublicObjectives.at(j).getName() == "Medium Shades") {
+			// Sets of 3 & 4 values anywhere (2 pts each)
+			int threes = 0; int fours = 0;
+			threes = board.countValue(3);
+			fours = board.countValue(4);
+			pointTotal += std::min(threes, fours) * std::stoi(selectedPublicObjectives.at(j).getPoints());
+		}
+		else if (selectedPublicObjectives.at(j).getName() == "Deep Shades") {
+			// Sets of 5 & 6 values anywhere (2 pts each)
+			int fives = 0; int sixes = 0;
+			fives = board.countValue(5);
+			sixes = board.countValue(6);
+			pointTotal += std::min(fives, sixes) * std::stoi(selectedPublicObjectives.at(j).getPoints());
+		}
+		else if (selectedPublicObjectives.at(j).getName() == "Column Shade Variety") {
+			// Columns with no repeated values (4 pts each)
+			int count = 0; // counter variable for columns with no repeats
+			for (int col = 0; col < 5; col++) {
+				std::set<int> numbers;
+				bool hasRepeat = false;
+				for (int row = 0; row < 4; row++) {
+					int num = board.getDice()[row][col].getNumber();
+					if (numbers.count(num) > 0) {
+						hasRepeat = true;
+						break;
+					}
+					numbers.insert(num);
+				}
+				if (!hasRepeat) {
+					count++;
+				}
+			}
+			pointTotal += count * std::stoi(selectedPublicObjectives.at(j).getPoints());
+		}
+	}
+	// lose one point for each empty space
+	pointTotal -= board.countEmpty();
+	// add one point for each remaining favor token
+	// (removed due to no tool card functionality)
+	// players.at(i).addPoints(players.at(i).getTokens());
+	return pointTotal;
+}

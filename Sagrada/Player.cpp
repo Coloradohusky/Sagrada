@@ -7,6 +7,7 @@ Player::Player(int pID) {
     favorTokens = 0;
     privateObjective = "";
     board = PlayerBoard();
+    totalPoints = 0;
 }
 
 void Player::setFrame(std::vector<std::vector<Die>> windowFrame) {
@@ -29,12 +30,16 @@ void Player::setDieInBoard(int x, int y, Die newDie) {
     board.setDie(newDie.getColor() + " " + std::to_string(newDie.getNumber()), x, y);
 }
 
-std::string Player::toString() {
-    return std::to_string(id) + ": " + privateObjective + " " + board.diceToString() + " " + std::to_string(favorTokens);
+void Player::setPoints(int points) {
+    totalPoints = points;
+}
+
+void Player::addPoints(int points) {
+    totalPoints += points;
 }
 
 bool Player::boardIsEmpty() {
-    return board.isEmpty();
+    return board.isCompletelyEmpty();
 }
 
 int Player::getTokens() {
@@ -47,4 +52,8 @@ std::string Player::getPrivateObjective() {
 
 PlayerBoard Player::getBoard() {
     return board;
+}
+
+int Player::getPoints() {
+    return totalPoints;
 }
