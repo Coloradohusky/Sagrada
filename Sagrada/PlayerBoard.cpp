@@ -70,3 +70,27 @@ int PlayerBoard::countValue(int value) {
     }
     return count;
 }
+
+int PlayerBoard::countColor(std::string color) {
+    int count = 0;
+    for (int i = 0; i < 4; i++) {
+        for (int j = 0; j < 5; j++) {
+            if (dice[i][j].getColor() == color) {
+                count++;
+            }
+        }
+    }
+    return count;
+}
+
+int PlayerBoard::countColorTotal(std::string color) {
+    int count = 0;
+    for (int i = 0; i < 4; i++) {
+        for (int j = 0; j < 5; j++) {
+            if (dice[i][j].getColor() == color) {
+                count += dice[i][j].getNumber();
+            }
+        }
+    }
+    return count;
+}

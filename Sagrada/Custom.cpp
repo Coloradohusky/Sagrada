@@ -363,7 +363,7 @@ sf::RectangleShape drawDie(Die currentDie, float size, float x, float y, sf::Col
 	return square;
 }
 
-int scoreBoard(PlayerBoard board, std::vector<PublicObjective> selectedPublicObjectives) {
+int scoreBoard(PlayerBoard board, std::vector<PublicObjective> selectedPublicObjectives, std::string privateObjective) {
 	int pointTotal = 0;
 	for (int j = 0; j < selectedPublicObjectives.size(); j++) {
 		if (selectedPublicObjectives.at(j).getName() == "Light Shades") {
@@ -407,7 +407,123 @@ int scoreBoard(PlayerBoard board, std::vector<PublicObjective> selectedPublicObj
 			}
 			pointTotal += count * std::stoi(selectedPublicObjectives.at(j).getPoints());
 		}
+		else if (selectedPublicObjectives.at(j).getName() == "Column Color Variety") {
+			// Columns with no repeated colors (5 pts each)
+			int count = 0; // counter variable for columns with no repeats
+			for (int col = 0; col < 5; col++) {
+				std::set<std::string> colors;
+				bool hasRepeat = false;
+				for (int row = 0; row < 4; row++) {
+					std::string color = board.getDice()[row][col].getColor();
+					if (colors.count(color) > 0) {
+						hasRepeat = true;
+						break;
+					}
+					colors.insert(color);
+				}
+				if (!hasRepeat) {
+					count++;
+				}
+			}
+			pointTotal += count * std::stoi(selectedPublicObjectives.at(j).getPoints());
+		}
+		else if (selectedPublicObjectives.at(j).getName() == "Row Shade Variety") {
+			// Rows with no repeated values (5 pts each)
+			int count = 0; // counter variable for columns with no repeats
+			for (int row = 0; row < 4; row++) {
+				std::set<int> numbers;
+				bool hasRepeat = false;
+				for (int col = 0; col < 5; col++) {
+					int num = board.getDice()[row][col].getNumber();
+					if (numbers.count(num) > 0) {
+						hasRepeat = true;
+						break;
+					}
+					numbers.insert(num);
+				}
+				if (!hasRepeat) {
+					count++;
+				}
+			}
+			pointTotal += count * std::stoi(selectedPublicObjectives.at(j).getPoints());
+		}
+		else if (selectedPublicObjectives.at(j).getName() == "Row Color Variety") {
+			// Rows with no repeated colors (6 pts each)
+			int count = 0; // counter variable for columns with no repeats
+			for (int row = 0; row < 4; row++) {
+				std::set<std::string> colors;
+				bool hasRepeat = false;
+				for (int col = 0; col < 5; col++) {
+					std::string color = board.getDice()[row][col].getColor();
+					if (colors.count(color) > 0) {
+						hasRepeat = true;
+						break;
+					}
+					colors.insert(color);
+				}
+				if (!hasRepeat) {
+					count++;
+				}
+			}
+			pointTotal += count * std::stoi(selectedPublicObjectives.at(j).getPoints());
+		}
+		else if (selectedPublicObjectives.at(j).getName() == "Shade Variety") {
+			// Sets of one of each value anywhere (5 each)
+			std::vector<int> counts;
+			for (int i = 1; i <= 6; i++) {
+				counts.push_back(board.countValue(i));
+			}
+			pointTotal += *std::max_element(counts.begin(), counts.end()) * std::stoi(selectedPublicObjectives.at(j).getPoints());
+		}
+		else if (selectedPublicObjectives.at(j).getName() == "Color Variety") {
+			// Sets of one of each color anywhere (4 each)
+			std::vector<int> counts;
+			counts.push_back(board.countColor("Red"));
+			pointTotal += *std::max_element(counts.begin(), counts.end()) * std::stoi(selectedPublicObjectives.at(j).getPoints());
+		}
+		else if (selectedPublicObjectives.at(j).getName() == "Color Diagonals") {
+			// Count of diagonally adjacent same-color dice
+			int count = 0;
+			std::vector<bool> alreadyCounted(20, false);
+			for (int i = 0; i < 4; ++i) {
+				for (int j = 0; j < 5; ++j) {
+					std::string color = board.getDice()[i][j].getColor();
+					// Check diagonal neighbors
+					if (i > 0 && j > 0 && board.getDice()[i - 1][j - 1].getColor() == color) {
+						int index = (i - 1) * 5 + (j - 1);
+						if (!alreadyCounted[index]) {
+							count++;
+							alreadyCounted[index] = true;
+						}
+					}
+					if (i > 0 && j < 5 - 1 && board.getDice()[i - 1][j + 1].getColor() == color) {
+						int index = (i - 1) * 5 + (j + 1);
+						if (!alreadyCounted[index]) {
+							count++;
+							alreadyCounted[index] = true;
+						}
+					}
+					if (i < 4 - 1 && j > 0 && board.getDice()[i + 1][j - 1].getColor() == color) {
+						int index = (i + 1) * 5 + (j - 1);
+						if (!alreadyCounted[index]) {
+							count++;
+							alreadyCounted[index] = true;
+						}
+					}
+					if (i < 4 - 1 && j < 5 - 1 && board.getDice()[i + 1][j + 1].getColor() == color) {
+						int index = (i + 1) * 5 + (j + 1);
+						if (!alreadyCounted[index]) {
+							count++;
+							alreadyCounted[index] = true;
+						}
+					}
+				}
+			}
+			pointTotal += count;
+		}
 	}
+	// add up private objective
+	pointTotal += board.countColorTotal(privateObjective);
 	// lose one point for each empty space
 	pointTotal -= board.countEmpty();
 	// add one point for each remaining favor token

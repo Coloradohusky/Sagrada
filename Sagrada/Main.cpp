@@ -610,7 +610,7 @@ int main() {
 		else {
 			for (int i = 0; i < playerCount; i++) {
 				// add up from all three public objectives
-				players.at(i).setPoints(scoreBoard(players.at(i).getBoard(), selectedPublicObjectives));
+				players.at(i).setPoints(scoreBoard(players.at(i).getBoard(), selectedPublicObjectives, players.at(i).getPrivateObjective()));
 				std::cout << "Player " << i + 1 << ":\t" << players.at(i).getPoints() << std::endl;
 			}
 			std::cout << "Done!" << std::endl;
