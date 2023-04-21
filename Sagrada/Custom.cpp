@@ -1,5 +1,8 @@
 #include "Custom.hpp"
 
+int SCREEN_WIDTH = 1120;
+int SCREEN_HEIGHT = SCREEN_WIDTH * ratio;
+
 sf::ConvexShape RoundedRectangle(float x, float y, float rectWidth, float rectHeight, float radius, const sf::Color& shapeColor, float outline, const sf::Color& outlineCol) {
 	int totalPoints = 40;
 	sf::ConvexShape rrect;

@@ -21,9 +21,6 @@
 #include "PublicObjective.hpp"
 #include "RoundTrack.hpp"
 
-int SCREEN_WIDTH = 1120;
-int SCREEN_HEIGHT = SCREEN_WIDTH * ratio;
-
 int main();
 
 int main() {
