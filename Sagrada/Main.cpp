@@ -114,6 +114,10 @@ int main() {
 		publicObjectives.erase(std::to_string(randomNumber));
 	}
 
+	windowFrames.clear();
+	publicObjectives.clear();
+	toolCards.clear();
+
 	// draw window loop
     while (window.isOpen()) {
         sf::Event event;
@@ -236,6 +240,7 @@ int main() {
 			window.draw(otherPlayerText[1]);
 			window.draw(otherPlayerText[2]);
 			window.draw(logoRect);
+			delete logoTexture;
 		}
 		else if (inMenu == 1) {
 			sf::Text menuText[2];
@@ -277,21 +282,7 @@ int main() {
 					privColor.setOutlineThickness(1);
 					privColor.setOutlineColor(sf::Color::Black);
 					privColor.setPosition(SCREEN_WIDTH / 2.0, SCREEN_HEIGHT / 1.5);
-					if (players[i].getPrivateObjective() == "Blue") {
-						privColor.setFillColor(blue);
-					}
-					else if (players[i].getPrivateObjective() == "Red") {
-						privColor.setFillColor(red);
-					}
-					else if (players[i].getPrivateObjective() == "Green") {
-						privColor.setFillColor(green);
-					}
-					else if (players[i].getPrivateObjective() == "Purple") {
-						privColor.setFillColor(purple);
-					}
-					else if (players[i].getPrivateObjective() == "Yellow") {
-						privColor.setFillColor(yellow);
-					}
+					privColor.setFillColor(players.at(i).getPrivateObjective());
 					window.draw(privColor);
 					if (selected != 0) {
 						players[i].setFrame(selectedPatternCards[i * 4 + selected - 1].getDice());
@@ -320,7 +311,7 @@ int main() {
 				dicePool.roll(&diceBag, playerCount);
 			}
 			if (currentPlayerIsDone == 1 || currentPlayer == 0) {
-				if (currentPlayer == 0) {
+				if (currentPlayer == 0) { // if round is over
 					// reset draft pool, add to round track
 					roundTrack.setRoundTrack(dicePool, currentTurn);
 					for (int r = 0; r < dicePool.size(); r++) {
@@ -427,21 +418,7 @@ int main() {
 				}
 				// draw token count and private objective in bottom of the board outline
 				sf::RectangleShape privObj;
-				if (players[currentPlayer - 1].getPrivateObjective() == "Blue") {
-					privObj.setFillColor(blue);
-				}
-				else if (players[currentPlayer - 1].getPrivateObjective() == "Red") {
-					privObj.setFillColor(red);
-				}
-				else if (players[currentPlayer - 1].getPrivateObjective() == "Green") {
-					privObj.setFillColor(green);
-				}
-				else if (players[currentPlayer - 1].getPrivateObjective() == "Purple") {
-					privObj.setFillColor(purple);
-				}
-				else if (players[currentPlayer - 1].getPrivateObjective() == "Yellow") {
-					privObj.setFillColor(yellow);
-				}
+				privObj.setFillColor(players.at(currentPlayer - 1).getPrivateObjective());
 				privObj.setSize(sf::Vector2f(boardWidth / 1.5, boardWidth / 9.0));
 				privObj.setPosition(SCREEN_WIDTH - margin * 1.7 - boardWidth / 1.5, 0 - margin * 2.75 + boardHeight);
 				privObj.setOutlineThickness(1);
@@ -595,7 +572,7 @@ int main() {
 							selectedDieIndex = -1;
 							Sleep(sleepTime);
 						}
-						else if (sf::Mouse::isButtonPressed(sf::Mouse::Right)) { // If right clicking with no die selected, skips your turn
+						else if (sf::Mouse::isButtonPressed(sf::Mouse::Right)) { // If right clicking with no die selected, turn is skipped
 							currentPlayerIsDone = 1;
 							Sleep(sleepTime);
 						}
@@ -603,15 +580,219 @@ int main() {
 				}
 			}
 		}
-		// the game is over - tally up points
+		// the game is over - tally up points and declare the winner
 		else {
+			//players.at(0).setTotalPoints(4);
+			//players.at(1).setTotalPoints(4);
+			float playerScoreMargin = SCREEN_WIDTH / 40.0;
+			float playerScoreWidth = (SCREEN_WIDTH / 4.0) - playerScoreMargin;
+			float playerScoreHeight = SCREEN_HEIGHT / 1.75;
+			float totalWidth = playerCount * (playerScoreWidth + playerScoreMargin) - playerScoreMargin; // Calculate the total width of all the shapes
+			float startX = (SCREEN_WIDTH - totalWidth) / 2.0; // Calculate the starting x-position to center the shapes
+			//players.at(0).setFrame();
 			for (int i = 0; i < playerCount; i++) {
 				// add up from all three public objectives
-				players.at(i).setPoints(scoreBoard(players.at(i).getBoard(), selectedPublicObjectives, players.at(i).getPrivateObjective()));
-				std::cout << "Player " << i + 1 << ":\t" << players.at(i).getPoints() << std::endl;
+				players.at(i).getTotalPoints(selectedPublicObjectives);
+				// draw the outline of the scores
+				sf::ConvexShape playerScoreOutline;
+				float playerScoreX = startX + (playerScoreWidth + playerScoreMargin) * i;
+				float playerScoreY = playerScoreMargin / 2.0;
+				playerScoreOutline = RoundedRectangle(playerScoreX, playerScoreY, playerScoreWidth, playerScoreHeight, 10, players.at(i).getPrivateObjective(), 2, sf::Color::Black);
+				window.draw(playerScoreOutline);
+				// draw player name (#)
+				sf::Text playerText;
+				float playerTextX = playerScoreX + playerScoreWidth / 2.0;
+				playerText.setFont(font);
+				playerText.setFillColor(sf::Color::Black);
+				playerText.setStyle(sf::Text::Bold);
+				playerText.setString("Player " + std::to_string(i + 1));
+				playerText.setCharacterSize(34.0 * ((double)SCREEN_WIDTH / (double)DEFAULT_SCREEN_WIDTH));
+				playerText.setOrigin(playerText.getLocalBounds().width / 2, 0);
+				playerText.setPosition(playerTextX, playerScoreY + playerScoreHeight / 30.0);
+				window.draw(playerText);
+				float textSize = 18.0;
+				float pointsMarginDivider = 1.35;
+				// draw public objective points gained
+				std::vector<sf::Text> publicObjectiveNames;
+				std::vector<sf::Text> publicObjectivePoints;
+				for (int p = 0; p < selectedPublicObjectives.size(); p++) { // draw the objective card text
+					publicObjectiveNames.push_back(sf::Text());
+					float privateObjectiveY = 0.0;
+					publicObjectiveNames[p].setFont(font);
+					publicObjectiveNames[p].setStyle(sf::Text::Bold);
+					publicObjectiveNames[p].setLetterSpacing(0.48);
+					publicObjectiveNames[p].setFillColor(sf::Color::Black);
+					publicObjectiveNames[p].setString(selectedPublicObjectives[p].getName() + ":");
+					publicObjectiveNames[p].setCharacterSize(textSize * ((double)SCREEN_WIDTH / (double)DEFAULT_SCREEN_WIDTH));
+					publicObjectiveNames[p].setOrigin(publicObjectiveNames[p].getLocalBounds().left, 0);
+					if (p == 0) {
+						privateObjectiveY = playerText.getGlobalBounds().top + playerScoreMargin * 1.50;
+						publicObjectiveNames[p].setPosition(playerScoreX + pointsMarginDivider * 10.00, privateObjectiveY);
+					}
+					else {
+						privateObjectiveY = publicObjectiveNames[p - 1].getGlobalBounds().top + playerScoreMargin;
+						publicObjectiveNames[p].setPosition(playerScoreX + pointsMarginDivider * 10.00, privateObjectiveY);
+					}
+					window.draw(publicObjectiveNames[p]);
+					publicObjectivePoints.push_back(sf::Text());
+					publicObjectivePoints[p].setFont(font);
+					publicObjectivePoints[p].setStyle(sf::Text::Bold);
+					publicObjectivePoints[p].setFillColor(sf::Color::Black);
+					publicObjectivePoints[p].setString(std::to_string(players.at(i).getPublicObjectivePoints(p)));
+					publicObjectivePoints[p].setCharacterSize(textSize * ((double)SCREEN_WIDTH / (double)DEFAULT_SCREEN_WIDTH));
+					publicObjectivePoints[p].setOrigin(publicObjectivePoints[p].getLocalBounds().width, 0);
+					publicObjectivePoints[p].setPosition(playerScoreX + playerScoreWidth - pointsMarginDivider * 10.00, privateObjectiveY);
+					window.draw(publicObjectivePoints[p]);
+				}
+				// draw private objective points gained
+				sf::Text privateObjectiveText;
+				sf::Text privateObjectivePoints;
+				float privateObjectiveY = publicObjectivePoints[selectedPublicObjectives.size() - 1].getGlobalBounds().top + playerScoreMargin;
+				privateObjectiveText.setFont(font);
+				privateObjectiveText.setStyle(sf::Text::Bold);
+				privateObjectiveText.setLetterSpacing(0.48);
+				privateObjectiveText.setFillColor(sf::Color::Black);
+				privateObjectiveText.setString("Private Objective Points:");
+				privateObjectiveText.setCharacterSize(textSize * ((double)SCREEN_WIDTH / (double)DEFAULT_SCREEN_WIDTH));
+				privateObjectiveText.setOrigin(privateObjectiveText.getLocalBounds().left, 0);
+				privateObjectiveText.setPosition(playerScoreX + pointsMarginDivider * 10.00, privateObjectiveY);
+				window.draw(privateObjectiveText);
+				privateObjectivePoints.setFont(font);
+				privateObjectivePoints.setStyle(sf::Text::Bold);
+				privateObjectivePoints.setFillColor(sf::Color::Black);
+				privateObjectivePoints.setString(std::to_string(players.at(i).getPrivateObjectivePoints()));
+				privateObjectivePoints.setCharacterSize(textSize * ((double)SCREEN_WIDTH / (double)DEFAULT_SCREEN_WIDTH));
+				privateObjectivePoints.setOrigin(privateObjectivePoints.getLocalBounds().width, 0);
+				privateObjectivePoints.setPosition(playerScoreX + playerScoreWidth - pointsMarginDivider * 10.00, privateObjectiveY);
+				window.draw(privateObjectivePoints);
+				// draw open spaces points lost
+				sf::Text openSpacesText, openSpacesPoints;
+				float openSpacesY = privateObjectiveText.getGlobalBounds().top + playerScoreMargin;
+				openSpacesText.setFont(font);
+				openSpacesText.setStyle(sf::Text::Bold);
+				openSpacesText.setLetterSpacing(0.48);
+				openSpacesText.setFillColor(sf::Color::Black);
+				openSpacesText.setString("Open Spaces:");
+				openSpacesText.setCharacterSize(textSize * ((double)SCREEN_WIDTH / (double)DEFAULT_SCREEN_WIDTH));
+				openSpacesText.setOrigin(openSpacesText.getLocalBounds().left, 0);
+				openSpacesText.setPosition(playerScoreX + pointsMarginDivider * 10.00, openSpacesY);
+				window.draw(openSpacesText);
+				openSpacesPoints.setFont(font);
+				openSpacesPoints.setStyle(sf::Text::Bold);
+				openSpacesPoints.setFillColor(sf::Color::Black);
+				openSpacesPoints.setString(std::to_string(0 - players.at(i).getBoard().countEmpty()));
+				openSpacesPoints.setCharacterSize(textSize * ((double)SCREEN_WIDTH / (double)DEFAULT_SCREEN_WIDTH));
+				openSpacesPoints.setOrigin(openSpacesPoints.getLocalBounds().width, 0);
+				openSpacesPoints.setPosition(playerScoreX + playerScoreWidth - pointsMarginDivider * 10.00, openSpacesY);
+				window.draw(openSpacesPoints);
+				// draw total points
+				sf::Text totalPointsText, totalPointsPoints;
+				float totalPointsY = openSpacesText.getGlobalBounds().top + playerScoreMargin;
+				totalPointsText.setFont(font);
+				totalPointsText.setStyle(sf::Text::Bold);
+				totalPointsText.setLetterSpacing(0.4);
+				totalPointsText.setFillColor(sf::Color::Black);
+				totalPointsText.setString("TOTAL POINTS:");
+				totalPointsText.setCharacterSize(textSize * 1.4 * ((double)SCREEN_WIDTH / (double)DEFAULT_SCREEN_WIDTH));
+				totalPointsText.setOrigin(totalPointsText.getLocalBounds().left, 0);
+				totalPointsText.setPosition(playerScoreX + pointsMarginDivider * 10.00, totalPointsY);
+				window.draw(totalPointsText);
+				totalPointsPoints.setFont(font);
+				totalPointsPoints.setStyle(sf::Text::Bold);
+				totalPointsPoints.setFillColor(sf::Color::Black);
+				totalPointsPoints.setString(std::to_string(players.at(i).getTotalPoints()));
+				totalPointsPoints.setCharacterSize(textSize * 1.4 * ((double)SCREEN_WIDTH / (double)DEFAULT_SCREEN_WIDTH));
+				totalPointsPoints.setOrigin(totalPointsPoints.getLocalBounds().width, 0);
+				totalPointsPoints.setPosition(playerScoreX + playerScoreWidth - pointsMarginDivider * 10.00, totalPointsY);
+				window.draw(totalPointsPoints);
 			}
-			std::cout << "Done!" << std::endl;
-			break;
+			std::vector<int> winners = { 1 };
+			int max_points = players.at(0).getTotalPoints(); // assume first element is the maximum
+			int count_max = 1; // count the number of times the maximum appears
+			for (int i = 0; i < playerCount; i++) {
+				if (players.at(i).getTotalPoints() > max_points) {
+					winners.clear();
+					max_points = players.at(i).getTotalPoints();
+					count_max = 1;
+					winners.push_back(i + 1);
+				}
+				else if (players.at(i).getTotalPoints() == max_points) {
+					if (i != 0) {
+						count_max++;
+						winners.push_back(i + 1);
+					}
+				}
+			}
+			std::string winnerString;
+			if (count_max > 1) { // Ties are broken by Private Objective points
+				std::vector<int> privateObjectivePoints;
+				for (int p = 0; p < winners.size(); p++) {
+					privateObjectivePoints.push_back(players.at(winners.at(p) - 1).getPrivateObjectivePoints());
+				}
+				std::vector<int> realWinners = { };
+				max_points = privateObjectivePoints.at(0); 
+				count_max = 1;
+				for (int i = 0; i < winners.size(); i++) {
+					if (privateObjectivePoints.at(i) > max_points) {
+						realWinners.clear();
+						max_points = privateObjectivePoints.at(i);
+						count_max = 1;
+						realWinners.push_back(i + 1);
+					}
+					else if (privateObjectivePoints.at(i) == max_points) {
+						count_max++;
+						realWinners.push_back(i + 1);
+					}
+				}
+				if (realWinners.size() > 1) {
+					winnerString = "Players ";
+					for (int o = 0; o < realWinners.size(); o++) {
+						winnerString.append(std::to_string(realWinners.at(o)) + " ");
+						if (o != realWinners.size() - 1) {
+							winnerString.append("and ");
+						}
+					}
+					winnerString.append("have TIED!");
+					//std::cout << "There is a tie between the winners!" << std::endl;
+				}
+				else {
+					winnerString = "Player " + std::to_string(realWinners.at(0)) + " WINS via a TIEBREAKER!";
+				}
+			}
+			else {
+				winnerString = "Player " + std::to_string(winners.at(0)) + " WINS!";
+				//std::cout << "There is no tie between the winners." << std::endl;
+			}
+
+			sf::Text winnerText;
+			winnerText.setFont(font);
+			winnerText.setFillColor(sf::Color::Black);
+			winnerText.setStyle(sf::Text::Bold);
+			winnerText.setCharacterSize(60.0 * ((double)SCREEN_WIDTH / (double)DEFAULT_SCREEN_WIDTH));
+			winnerText.setString(winnerString);
+			winnerText.setOrigin(winnerText.getLocalBounds().width / 2, 0);
+			winnerText.setPosition(SCREEN_WIDTH / 2.0, SCREEN_HEIGHT - margin * 2.0);
+			window.draw(winnerText);
+			sf::Text playAgain;
+			playAgain.setFont(font);
+			playAgain.setFillColor(sf::Color::Black);
+			playAgain.setStyle(sf::Text::Bold);
+			playAgain.setCharacterSize(20.0 * ((double)SCREEN_WIDTH / (double)DEFAULT_SCREEN_WIDTH));
+			playAgain.setString("Right-click to go to the main menu");
+			playAgain.setOrigin(playAgain.getLocalBounds().width / 2, 0);
+			playAgain.setPosition(SCREEN_WIDTH / 2.0, SCREEN_HEIGHT - margin / 2.5);
+			window.draw(playAgain);
+			if (sf::Mouse::isButtonPressed(sf::Mouse::Right)) { // right-click to go back to the menu
+				// TODO - make fully work (encapsulate refresh? not entirely sure how to go about this
+				// maybe make a GameBoard class?
+				// (or just not have this feature)
+				playerCount = 0;
+				currentPlayer = 1;
+				currentTurn = 1;
+				playGame = 0;
+				currentPlayerIsDone = 0;
+				Sleep(sleepTime);
+			}
 		}
         window.display();
     }

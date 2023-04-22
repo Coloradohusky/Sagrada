@@ -63,7 +63,7 @@ int PlayerBoard::countValue(int value) {
     int count = 0;
     for (int i = 0; i < 4; i++) {
         for (int j = 0; j < 5; j++) {
-            if (dice[i][j].getNumber() == value) {
+            if (dice[i][j].getNumber() == value && !dice[i][j].isEmpty()) {
                 count++;
             }
         }
@@ -75,7 +75,7 @@ int PlayerBoard::countColor(std::string color) {
     int count = 0;
     for (int i = 0; i < 4; i++) {
         for (int j = 0; j < 5; j++) {
-            if (dice[i][j].getColor() == color) {
+            if (dice[i][j].getColor() == color && !dice[i][j].isEmpty()) {
                 count++;
             }
         }
