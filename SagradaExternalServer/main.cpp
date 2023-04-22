@@ -5,9 +5,13 @@
 
 int main(void) 
 {
-	int errorState = 0;
-	Server svr;
-	errorState = svr.start();
+	Server svr();
+	svr.start();
 
-	return errorState;
+	std::thread server(&Server::start, &svr);
+
+
+	svr.killServer();
+	server.join();
+	return 0;
 }
