@@ -239,17 +239,55 @@ int main() {
 		}
 		else if (inMenu == 1) {
 			sf::Text menuText[2];
+			sf::ConvexShape playerButton;
+			sf::Text playerText;
+			int buttonWidth = SCREEN_WIDTH / 5;
+			int buttonHeight = SCREEN_HEIGHT / 3.125;
+			playerButton = RoundedRectangle(SCREEN_WIDTH - 435, SCREEN_HEIGHT - 100, buttonWidth / 1.5, buttonHeight / 3, 10,
+				darkGray, 2, sf::Color::Black);
+			playerButton.setOutlineColor(sf::Color::Black);
+
+			playerText.setFont(font);
+			playerText.setCharacterSize(50.0 * ((double)SCREEN_WIDTH / (double)DEFAULT_SCREEN_WIDTH));
+			playerText.setFillColor(sf::Color::Black);
+			playerText.setStyle(sf::Text::Bold);
+			playerText.setString("Back");
+			sf::FloatRect textBounds = playerText.getLocalBounds();
+			sf::FloatRect shapeBounds = playerButton.getLocalBounds();
+			playerText.setPosition(shapeBounds.left + shapeBounds.width / 2 - textBounds.width / 2, SCREEN_HEIGHT - 100);
 
 			menuText[0].setFont(font);
 			menuText[0].setCharacterSize(25.0 * ((double)SCREEN_WIDTH / (double)DEFAULT_SCREEN_WIDTH));
 			menuText[0].setFillColor(sf::Color::Black);
 			menuText[0].setStyle(sf::Text::Bold);
-			menuText[0].setString("Here are the rules!");
+			menuText[0].setString("How to play! \n1. Pick your desired player count. \n2. Have each player select their Window! \nThe bottom right of each window displays \nit's difficulty from 3 "
+				"(easiest) to 6 (hardest). \n3. Taking turns, each player will select a \n\"rolled\" dice and place it on their window. \nSee diagram at top right for placement \nrestrictions. The"
+				" turn order is reversed after \nthe last person takes their turn (1,2,3,3,2,1). \n4. Once the first player finishes their second \nturn, if there are any remaining dice, they \nget"
+				" placed on the track (this can be viewed \nat the bottom right of the player screen). \nIf there are more than one die remaining, \nonly one gets put on the track. This \nis "
+				"considered the end of the round. \n5. Repeat steps 3 - 5 until 10 rounds have \nbeen completed. \n6. Scores will be calculated and the winner \nwill be revealed!");
 			menuText[0].setPosition(10, 10);
 
+			menuText[1].setFont(font);
+			menuText[1].setCharacterSize(25.0 * ((double)SCREEN_WIDTH / (double)DEFAULT_SCREEN_WIDTH));
+			menuText[1].setFillColor(sf::Color::Black);
+			menuText[1].setStyle(sf::Text::Bold);
+			menuText[1].setString("Dice Placement Restrictions: \n*First die: Each player's first die of \nthe game must be placed on an \nedge or corner space. \n*Every other die must be adjacent \nto"
+				" previously placed die, touching \ndiagonally or orthogonally.\n*The die must match the color or \nvalue of the space. Grey spaces \nhave no restrictions \n*Dice may never be placed \n"
+				"orthogonally adjecent to a die of \nthe same color or the same value. \n**NOTE: You can choose to not \ndraft a die by right clicking during \nyour turn.");
+			menuText[1].setPosition(SCREEN_WIDTH - 435, 10);
+
+			if (MouseInConvexShape(playerButton, &window)) {
+				if (sf::Mouse::isButtonPressed(sf::Mouse::Left)) {
+					inMenu = 0;
+					Sleep(sleepTime);
+				}
+				playerButton.setOutlineColor(sf::Color::Yellow);
+			}
+
 			window.draw(menuText[0]);
-			//window.draw(menuText[1]);
-			//inMenu = 0;
+			window.draw(menuText[1]);
+			window.draw(playerButton);
+			window.draw(playerText);
 		}
 		else if (playGame != playerCount - 1) {
 			while (players.size() != playerCount) { // remove extra players if needed
