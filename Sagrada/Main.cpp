@@ -103,7 +103,6 @@ int main() {
 	// Same thing here - host only
 	for (int i = 0; i < 3; i++) {
 		int randomNumber = objectiveDist(mt);
-		randomNumber = 3;
 		while (publicObjectives.find(std::to_string(randomNumber)) == publicObjectives.not_found()) {
 			randomNumber = patternDist(mt);
 		}
@@ -778,14 +777,11 @@ int main() {
 			playAgain.setFillColor(sf::Color::Black);
 			playAgain.setStyle(sf::Text::Bold);
 			playAgain.setCharacterSize(20.0 * ((double)SCREEN_WIDTH / (double)DEFAULT_SCREEN_WIDTH));
-			playAgain.setString("Right-click to go to the main menu");
+			playAgain.setString("Right-click to exit the game");
 			playAgain.setOrigin(playAgain.getLocalBounds().width / 2, 0);
 			playAgain.setPosition(SCREEN_WIDTH / 2.0, SCREEN_HEIGHT - margin / 2.5);
 			window.draw(playAgain);
-			if (sf::Mouse::isButtonPressed(sf::Mouse::Right)) { // right-click to go back to the menu
-				// TODO - make fully work (encapsulate refresh? not entirely sure how to go about this
-				// maybe make a GameBoard class?
-				// (or just not have this feature)
+			if (sf::Mouse::isButtonPressed(sf::Mouse::Right)) { // right-click to exit the game
 				playerCount = 0;
 				currentPlayer = 1;
 				currentTurn = 1;

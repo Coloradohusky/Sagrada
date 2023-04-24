@@ -201,7 +201,7 @@ int Player::getTotalPoints(std::vector<PublicObjective> selectedPublicObjectives
 			for (int i = 1; i <= 6; i++) {
 				counts.push_back(board.countValue(i));
 			}
-			pointTotal += *std::max_element(counts.begin(), counts.end()) * std::stoi(selectedPublicObjectives.at(j).getPoints());
+			pointTotal += *std::min_element(counts.begin(), counts.end()) * std::stoi(selectedPublicObjectives.at(j).getPoints());
 		}
 		else if (selectedPublicObjectives.at(j).getName() == "Color Variety") {
 			// Sets of one of each color anywhere (4 each)
