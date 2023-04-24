@@ -86,7 +86,7 @@
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Console</SubSystem>
-      <AdditionalLibraryDirectories>C:\Users\riley\OneDrive\Documents\Sync\WSU\CPTS122\Sagrada\Sagrada\x64\Debug;$(SolutionDir)\Boost\lib;$(SolutionDir)\SFML\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(SolutionDir)Sagrada\x64\Debug;$(SolutionDir)Boost\lib;$(SolutionDir)\SFML\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>Custom.obj;DiceBag.obj;DicePool.obj;Die.obj;PatternCard.obj;Player.obj;PlayerBoard.obj;PublicObjective.obj;RoundTrack.obj;sfml-graphics-d.lib;sfml-window-d.lib;sfml-system-d.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>

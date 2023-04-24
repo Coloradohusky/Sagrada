@@ -1,6 +1,8 @@
 #pragma once
 #include <iostream>
 #include "PlayerBoard.hpp"
+#include "PublicObjective.hpp"
+#include <vector>
 
 class Player
 {
@@ -11,18 +13,24 @@ public:
     void setTokens(int newTokens);
     void setDieInBoard(int x, int y, std::string newDie);
     void setDieInBoard(int x, int y, Die newDie);
-    void setPoints(int points);
-    void addPoints(int points);
+    void setTotalPoints(int points);
+    void addPublicObjectivePoints(int points);
+    void setPrivateObjectivePoints(int points);
     bool boardIsEmpty();
     int getTokens();
-    std::string getPrivateObjective();
+    sf::Color getPrivateObjective();
     PlayerBoard getBoard();
-    int getPoints();
+    int getTotalPoints(std::vector<PublicObjective> selectedPublicObjectives);
+    int getTotalPoints();
+    int getPrivateObjectivePoints();
+    int getPublicObjectivePoints(int index);
 private:
     int id;
     int favorTokens;
     std::string privateObjective;
     PlayerBoard board;
     int totalPoints;
+    int privateObjectivePoints;
+    std::vector<int> publicObjectivePoints;
 };
 

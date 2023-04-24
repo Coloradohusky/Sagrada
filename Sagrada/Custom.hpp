@@ -39,5 +39,3 @@ int drawFrame(std::string frameName, std::vector<std::vector<Die>> frameBoard, i
 std::vector<int> drawBoard(std::vector<std::vector<Die>> frameBoard, sf::RenderWindow* window, sf::ConvexShape border, Die selectedDie);
 
 sf::RectangleShape drawDie(Die currentDie, float size, float x, float y, sf::Color isClickableOutlineColor, Die selectedDie, sf::RenderWindow* window);
-
-int scoreBoard(PlayerBoard board, std::vector<PublicObjective> selectedPublicObjectives, std::string privateObjective);
