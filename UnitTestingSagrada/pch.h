@@ -9,3 +9,4 @@
 #include "../Sagrada/Custom.hpp"
 #include "../Sagrada/Player.hpp"
 #include "../Sagrada/PublicObjective.hpp"
+#include "../Sagrada/DiceBag.hpp"

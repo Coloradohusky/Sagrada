@@ -126,7 +126,7 @@ int main() {
                 window.close();
 			if (event.type == sf::Event::Resized) {
 				SCREEN_WIDTH = window.getSize().x;
-				SCREEN_HEIGHT = SCREEN_WIDTH * ratio; // 16:10 aspect ratio
+				SCREEN_HEIGHT = SCREEN_WIDTH * ratio;
 				window.setSize(sf::Vector2u(SCREEN_WIDTH, SCREEN_HEIGHT));
 				window.setView(sf::View(sf::FloatRect(0.0, 0.0, SCREEN_WIDTH, SCREEN_HEIGHT)));
 				background.setSize(sf::Vector2f(SCREEN_WIDTH, SCREEN_HEIGHT));
@@ -135,7 +135,7 @@ int main() {
 		window.setSize(sf::Vector2u(SCREEN_WIDTH, SCREEN_HEIGHT));
         window.clear();
 		window.draw(background);
-		if (playerCount == 0 && inMenu == 0) {
+		if (playerCount == 0 && inMenu == 0) { // start menu
 			sf::Text playerText[4];
 			playerText[0].setFont(font);
 			playerText[0].setString("players");
@@ -241,13 +241,13 @@ int main() {
 			window.draw(logoRect);
 			delete logoTexture;
 		}
-		else if (inMenu == 1) {
+		else if (inMenu == 1) { // help menu
 			sf::Text menuText[2];
 			sf::ConvexShape playerButton;
 			sf::Text playerText;
-			int buttonWidth = SCREEN_WIDTH / 5;
-			int buttonHeight = SCREEN_HEIGHT / 3.125;
-			playerButton = RoundedRectangle(SCREEN_WIDTH - 435, SCREEN_HEIGHT - 100, buttonWidth / 1.5, buttonHeight / 3, 10,
+			int buttonWidth = SCREEN_WIDTH / 7.5;
+			int buttonHeight = SCREEN_HEIGHT / 9.375;
+			playerButton = RoundedRectangle(SCREEN_WIDTH - buttonWidth * 1.5, SCREEN_HEIGHT - buttonHeight * 1.5, buttonWidth, buttonHeight, 10,
 				darkGray, 2, sf::Color::Black);
 			playerButton.setOutlineColor(sf::Color::Black);
 
@@ -258,7 +258,7 @@ int main() {
 			playerText.setString("Back");
 			sf::FloatRect textBounds = playerText.getLocalBounds();
 			sf::FloatRect shapeBounds = playerButton.getLocalBounds();
-			playerText.setPosition(shapeBounds.left + shapeBounds.width / 2 - textBounds.width / 2, SCREEN_HEIGHT - 100);
+			playerText.setPosition(shapeBounds.left + shapeBounds.width / 2 - textBounds.width / 2, shapeBounds.top);
 
 			menuText[0].setFont(font);
 			menuText[0].setCharacterSize(25.0 * ((double)SCREEN_WIDTH / (double)DEFAULT_SCREEN_WIDTH));
@@ -278,7 +278,7 @@ int main() {
 			menuText[1].setString("Dice Placement Restrictions: \n*First die: Each player's first die of \nthe game must be placed on an \nedge or corner space. \n*Every other die must be adjacent \nto"
 				" previously placed die, touching \ndiagonally or orthogonally.\n*The die must match the color or \nvalue of the space. Grey spaces \nhave no restrictions \n*Dice may never be placed \n"
 				"orthogonally adjecent to a die of \nthe same color or the same value. \n**NOTE: You can choose to not \ndraft a die by right clicking during \nyour turn.");
-			menuText[1].setPosition(SCREEN_WIDTH - 435, 10);
+			menuText[1].setPosition(SCREEN_WIDTH / 1.75, 10);
 
 			if (MouseInConvexShape(playerButton, &window)) {
 				if (sf::Mouse::isButtonPressed(sf::Mouse::Left)) {
@@ -293,7 +293,7 @@ int main() {
 			window.draw(playerButton);
 			window.draw(playerText);
 		}
-		else if (playGame != playerCount - 1) {
+		else if (playGame != playerCount - 1) { // let each player choose their window frame
 			while (players.size() != playerCount) { // remove extra players if needed
 				players.pop_back();
 			}
@@ -342,14 +342,13 @@ int main() {
 				playerOrder = { 1, 2, 3, 4, 4, 3, 2, 1, 0 };
 			}
 		}
-		// play the game!
-		else if (!(currentTurn == 10 && currentPlayer == 0)) {
+		else if (!(currentTurn == 10 && currentPlayer == 0)) { // play the game!
 			if (dicePool.isCompletelyEmpty() && currentTurn == 1) {
 				dicePool.roll(&diceBag, playerCount);
 			}
 			if (currentPlayerIsDone == 1 || currentPlayer == 0) {
 				if (currentPlayer == 0) { // if round is over
-					// reset draft pool, add to round track
+					// reset draft pool, add remaining dice to round track
 					roundTrack.setRoundTrack(dicePool, currentTurn);
 					for (int r = 0; r < dicePool.size(); r++) {
 						dicePool.removeDie(r);
@@ -617,10 +616,7 @@ int main() {
 				}
 			}
 		}
-		// the game is over - tally up points and declare the winner
-		else {
-			//players.at(0).setTotalPoints(4);
-			//players.at(1).setTotalPoints(4);
+		else { // the game is over - tally up points and declare the winner
 			float playerScoreMargin = SCREEN_WIDTH / 40.0;
 			float playerScoreWidth = (SCREEN_WIDTH / 4.0) - playerScoreMargin;
 			float playerScoreHeight = SCREEN_HEIGHT / 1.75;

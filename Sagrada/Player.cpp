@@ -263,7 +263,7 @@ int Player::getTotalPoints(std::vector<PublicObjective> selectedPublicObjectives
 		publicObjectivePoints.push_back(toPushBack);
 	}
 	// add up private objective
-	privateObjectivePoints = board.countColorTotal(privateObjective);
+	privateObjectivePoints = board.countColorSum(privateObjective);
 	pointTotal += privateObjectivePoints;
 	// lose one point for each empty space
 	pointTotal -= board.countEmpty();

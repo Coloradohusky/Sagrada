@@ -15,7 +15,7 @@ public:
     int countEmpty();
     int countValue(int value);
     int countColor(std::string color); // counts the amount of that color
-    int countColorTotal(std::string color); // adds up the sum of the dice of that color (for private objective)
+    int countColorSum(std::string color); // adds up the sum of the dice of that color (for private objective)
 private:
     std::vector<std::vector<Die>> dice;
 };

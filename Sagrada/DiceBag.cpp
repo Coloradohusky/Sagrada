@@ -23,15 +23,14 @@ std::vector<Die> DiceBag::draw(int amount) {
 		newDraw.insert(newDraw.begin(), diceBag.back());
 		diceBag.pop_back();
 	}
-	// it doesn't work when it's only in one for loop, so I split it up
+	// it doesn't work when it's only in one for loop, so I had to split it up
 	for (int i = 0; i < amount; i++) {
 		newDraw[i].roll();
 	}
 	return newDraw;
 }
 
-Die DiceBag::draw()
-{
+Die DiceBag::draw() {
 	std::vector<Die> newDraw;
 	newDraw.insert(newDraw.begin(), diceBag.back());
 	diceBag.pop_back();

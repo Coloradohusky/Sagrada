@@ -83,7 +83,7 @@ int PlayerBoard::countColor(std::string color) { // returns number of die with t
     return count;
 }
 
-int PlayerBoard::countColorTotal(std::string color) { // returns sum of die with that color
+int PlayerBoard::countColorSum(std::string color) { // returns sum of die with that color
     int count = 0;
     for (int i = 0; i < 4; i++) {
         for (int j = 0; j < 5; j++) {
