@@ -5,13 +5,8 @@
 
 int main(void) 
 {
-	Server svr();
-	svr.start();
-
-	std::thread server(&Server::start, &svr);
-
-
-	svr.killServer();
-	server.join();
+	Server svr(46580);
+	std::thread serverThread(&Server::start, &svr);
+	serverThread.join();
 	return 0;
 }

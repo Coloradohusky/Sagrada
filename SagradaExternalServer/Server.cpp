@@ -1,31 +1,31 @@
 #include "Server.hpp"
 
-Server::Server(int listenPortOne_, int listenPortTwo_)
+Server::Server(int listenPortOne_)
 {
+	keepRunning = true;
+	connected = true;
+	listenPort = listenPortOne_;
+	waitingPackets = 0;
+
+	sendBuf.sendFlag = false;
+	LeaderBoard.clear();
 }
 
 Server::~Server()
 {
 }
 
-int Server::start()
+void Server::start()
 {
-	setupGame();
-	currentTurn = 1;
+	
 	while (keepRunning)
 	{
-
+		readCsv();
 		//connect the first client
-		sf::TcpListener listenOne;
-		listenOne.listen(listenPortOne);
-		listenOne.accept(playerOneSock);
-		std::cout << "client One connected: " << playerOneSock.getRemoteAddress() << " port: " << listenPortOne << std::endl;
-
-		//connect the second client
-		sf::TcpListener listenTwo;
-		listenTwo.listen(listenPortTwo);
-		listenTwo.accept(playerTwoSock);
-		std::cout << "client two connected: " << playerTwoSock.getRemoteAddress() << " port: " << listenPortOne + 1 << std::endl;
+		sf::TcpListener listen;
+		listen.listen(listenPort);
+		listen.accept(serverSock);
+		std::cout << "client One connected: " << serverSock.getRemoteAddress() << " port: " << listenPort << std::endl;
 
 
 		//start the threads responsible for sending and receiving for simplicitys sake send will invoke the server update functions apart
@@ -34,54 +34,12 @@ int Server::start()
 		std::thread recvThread(&Server::receive, this);
 		sendThread.join();
 		recvThread.join();
+		writeToCsv();
 	}
 	return;
 }
 
-void Server::killServer()
-{
-	keepRunning = false;
-	connected = false;
-}
-//(data, data, data, data, data,)
-void Server::setupGame()
-{
-	//needs to setup the game 
-	state;
-	// can I use Sagrada classes?
-	for (int i = 0; i < 8; i++) {
-		int randomNumber = patternDist(mt);
-		while (windowFrames.find(std::to_string(randomNumber)) == windowFrames.not_found()) {
-			randomNumber = patternDist(mt);
-		}
-		for (int j = 0; j < 2; j++) {
-			selectedPatternCards.insert(selectedPatternCards.end(), PatternCard());
-			selectedPatternCards.back().setName(windowFrames.get_child(std::to_string(randomNumber)).front().first);
-			selectedPatternCards.back().setTokens(std::stoi(windowFrames.get_child(std::to_string(randomNumber)).front().second.get<std::string>("Tokens")));
-			for (int k = 0; k < 4; k++) {
-				boost::property_tree::ptree temp = windowFrames.get_child(std::to_string(randomNumber)).front().second.get_child("Board").begin()->second;
-				int subSubIndex = 0;
-				fillFrameArray(temp, &selectedPatternCards, (i * 2) + j, k, subSubIndex);
-				windowFrames.get_child(std::to_string(randomNumber)).front().second.get_child("Board").pop_front();
-			}
-			windowFrames.get_child(std::to_string(randomNumber)).pop_front();
-		}
-		windowFrames.erase(std::to_string(randomNumber));
-	}
 
-	for (int i = 0; i < 3; i++) {
-		int randomNumber = objectiveDist(mt);
-		randomNumber = 3;
-		while (publicObjectives.find(std::to_string(randomNumber)) == publicObjectives.not_found()) {
-			randomNumber = patternDist(mt);
-		}
-		selectedPublicObjectives.insert(selectedPublicObjectives.end(), PublicObjective());
-		selectedPublicObjectives.back().setName(publicObjectives.get_child(std::to_string(randomNumber)).get<std::string>("Name"));
-		selectedPublicObjectives.back().setDescription(publicObjectives.get_child(std::to_string(randomNumber)).get<std::string>("Description"));
-		selectedPublicObjectives.back().setPoints(publicObjectives.get_child(std::to_string(randomNumber)).get<std::string>("Points"));
-		publicObjectives.erase(std::to_string(randomNumber));
-	}
-}
 
 
 void Server::receive()
@@ -91,70 +49,27 @@ void Server::receive()
 	while (connected && keepRunning) 
 	{
 		std::this_thread::sleep_for(std::chrono::milliseconds(10));
-		if (currentTurn == 1) 
+		auto messageStat = serverSock.receive(receiveBuffer, sizeof(receiveBuffer), bufSize);
+		if (messageStat == sf::TcpSocket::Done)
 		{
-			auto status = playerOneSock.receive(receiveBuffer, sizeof(receiveBuffer), bufSize);
-			
-			//debugging stuff define the NETWORKDEBUG to get verbose info
-			#ifdef NETWORKDEBUG
-			if (messageStat == sf::TcpSocket::Done)
-			{
-				std::cout << "recv OK Send p1\n";
-			}
-			if (messageStat == sf::TcpSocket::NotReady)
-			{
-				std::cout << "notready Send p1\n";
-			}
-			if (messageStat == sf::TcpSocket::Error)
-			{
-				std::cout << "error recv Send p1\n";
-			}
-			if (messageStat == sf::TcpSocket::Disconnected)
-			{
-				std::cout << "client disconnected Send p1\n";
-			}
-			#endif // DEBUG
-
-			if (status == sf::TcpSocket::Error || status == sf::TcpSocket::Disconnected)
-			{
-				connected = false;
-			}
-
+			std::cout << "recv OK\n";
 		}
-		//receive for the second player
-		if (currentTurn == 2) 
+		if (messageStat == sf::TcpSocket::NotReady)
 		{
-			auto status = playerTwoSock.receive(receiveBuffer, sizeof(receiveBuffer), bufSize);
-			#ifdef NETWORKDEBUG
-			if (messageStat == sf::TcpSocket::Done)
-			{
-				std::cout << "recv OK Send p2\n";
-			}
-			if (messageStat == sf::TcpSocket::NotReady)
-			{
-				std::cout << "notready Send p2\n";
-			}
-			if (messageStat == sf::TcpSocket::Error)
-			{
-				std::cout << "error recv Send p2\n";
-			}
-			if (messageStat == sf::TcpSocket::Disconnected)
-			{
-				std::cout << "client disconnected Send p2\n";
-			}
-			#endif // DEBUG
-
-			if (status == sf::TcpSocket::Error || status == sf::TcpSocket::Disconnected)
-			{
-				connected = false;
-			}
-		
-
+			std::cout << "notready\n";
 		}
-		else 
+		if (messageStat == sf::TcpSocket::Error)
 		{
-			throw "current turn gave something invalid (Server::receive)";
+			std::cout << "error recv\n";
 		}
+		if (messageStat == sf::TcpSocket::Disconnected)
+		{
+			std::cout << "client disconnected\n";
+			connected = false;
+		}
+
+		readbufferIntoStream(receiveBuffer, bufSize, inStream, ')', waitingPackets);
+		readMessages();
 	}
 	return;
 }
@@ -163,93 +78,146 @@ void Server::send()
 {
 	while (connected && keepRunning)
 	{
+		prepSendBuf();
 		std::this_thread::sleep_for(std::chrono::milliseconds(10));
-		if (currentTurn == 1)
+		if (sendBuf.sendFlag) 
 		{
-			//if the sendflag it set it needs to be sent
-			if (playerOneData.sendFlag == true)
+			size_t len = strlen(sendBuf.sendMsg);
+			auto messageStat = serverSock.send(sendBuf.sendMsg, len);
+			if (messageStat == sf::TcpSocket::Done)
 			{
-				size_t msg = strlen(playerOneData.sendMsg);
-				auto messageStat = playerOneSock.send(playerOneData.sendMsg, msg);
-
-				#ifdef NETWORKDEBUG
-				if (messageStat == sf::TcpSocket::Done)
-				{
-					std::cout << "recv OK Send p1\n";
-				}
-				if (messageStat == sf::TcpSocket::NotReady)
-				{
-					std::cout << "notready Send p1\n";
-				}
-				if (messageStat == sf::TcpSocket::Error)
-				{
-					std::cout << "error recv Send p1\n";
-				}
-				if (messageStat == sf::TcpSocket::Disconnected)
-				{
-					std::cout << "client disconnected Send p1\n";
-					connected = false;
-				}
-				#endif // DEBUG
-				playerOneData.sendFlag = false;
+				std::cout << "recv OK Send\n";
 			}
-		}
-		else if (currentTurn == 2) 
-		{
-			if (playerTwoData.sendFlag == true) 
+			if (messageStat == sf::TcpSocket::NotReady)
 			{
-				size_t msg = strlen(playerOneData.sendMsg);
-				auto messageStat = playerOneSock.send(playerOneData.sendMsg, msg);
-
-				#ifdef NETWORKDEBUG
-				if (messageStat == sf::TcpSocket::Done)
-				{
-					std::cout << "recv OK Send p2\n";
-				}
-				if (messageStat == sf::TcpSocket::NotReady)
-				{
-					std::cout << "notready Send p2\n";
-				}
-				if (messageStat == sf::TcpSocket::Error)
-				{
-					std::cout << "error recv Send p2\n";
-				}
-				if (messageStat == sf::TcpSocket::Disconnected)
-				{
-					std::cout << "client disconnected Send p2\n";
-					connected = false;
-				}
-				#endif // DEBUG
-				playerTwoData.sendFlag = false;
+				std::cout << "notready Send\n";
 			}
-		}
-		else 
-		{
-			throw "current turn gave something invalid (Server::send)";
+			if (messageStat == sf::TcpSocket::Error)
+			{
+				std::cout << "error recv Send\n";
+			}
+			if (messageStat == sf::TcpSocket::Disconnected)
+			{
+				std::cout << "client disconnected Send";
+				connected = false;
+			}
+			sendBuf.sendFlag = false;
 		}
 	}
 	return;
 }
 
-void Server::readbufferIntoStream(char arr[], int sizearr, std::stringstream& stream, char packetDelim, int player)
+void Server::readbufferIntoStream(char arr[], int sizearr, std::stringstream& stream, char packetDelim, int& waitingPackets)
 {
 	for (int i = 0; i < sizearr; ++i) 
 	{
 		char scanner = arr[i];
 		if (scanner == packetDelim)
 		{
-			if (player == 1) 
-			{
-				++playerOnePackets;
-			}
-			else 
-			{
-				++playerTwoPackets;
-			}
-			stream << scanner;
+			++waitingPackets;
 		}
+		stream << scanner;
+	}
+	return;
+}
+
+void Server::writeToCsv()
+{
+	std::ofstream outStream;
+	outStream.open("winhistory.csv");
+	outStream << "Firstplace,secondPlace,thirdplace,fourthplace\n";
+
+	for (int i = LeaderBoard.size()-1; i >= 0; ++i)
+	{
+		LeaderBoardEntry entry = LeaderBoard[i];
+		outStream << entry.firstPlace << ',';
+		outStream << entry.secondPlace << ',';
+		outStream << entry.thirdPlace << ',';
+		outStream << entry.fourthPlace << '\n';
 	}
 
+	LeaderBoard.clear();
+	outStream.close();
+}
 
+void Server::readCsv()
+{
+	LeaderBoard.clear();
+	std::ifstream inStream;
+	inStream.open("winhistory.csv");
+
+	std::string throwaway;
+	std::getline(inStream, throwaway);
+
+	while (!inStream.eof()) 
+	{
+		LeaderBoardEntry entry;
+		std::getline(inStream, entry.firstPlace, ',');
+		std::getline(inStream, entry.secondPlace, ',');
+		std::getline(inStream, entry.thirdPlace, ',');
+		std::getline(inStream, entry.fourthPlace);
+		
+		LeaderBoard.push_back(entry);
+	}
+	inStream.close();
+}
+
+void Server::readIntoOutstream()
+{
+	for (int i = 0; i < LeaderBoard.size(); ++i)
+	{
+		outStream << '(' << LeaderBoard[i].firstPlace << ',';
+		outStream << '(' << LeaderBoard[i].secondPlace << ',';
+		outStream << '(' << LeaderBoard[i].thirdPlace << ',';
+		outStream << '(' << LeaderBoard[i].fourthPlace << ',';
+		outStream << ')';
+	}
+	sendBuf.sendFlag = true;
+}
+
+void Server::prepSendBuf()
+{
+	if (outStream.eof()) 
+	{
+		sendBuf.sendFlag = false;
+		return;
+	}
+	for (int i = 0; i < 1023 && !outStream.eof(); ++i) 
+	{
+		outStream << sendBuf.sendMsg[i];
+	}
+	outStream << '\n';
+	return;
+}
+
+void Server::readMessages()
+{
+
+	//messages
+	//(upd,) request for scoreinfo
+	//(pst,p1,p2,p3,p4,) post score 
+	for (; waitingPackets > 0; --waitingPackets) 
+	{
+		char throwaway = 'a';
+		inStream >> throwaway;
+		
+		std::string msgHeader;
+		std::getline(inStream, msgHeader, ',');
+
+		if (msgHeader == "upd")
+		{
+			readIntoOutstream();
+		}
+		else if (msgHeader == "pst")
+		{
+			LeaderBoardEntry ldr;
+			std::getline(inStream, ldr.firstPlace, ',');
+			std::getline(inStream, ldr.secondPlace, ',');
+			std::getline(inStream, ldr.thirdPlace, ',');
+			std::getline(inStream, ldr.fourthPlace, ',');
+			LeaderBoard.push_back(ldr);
+		}
+		inStream >> throwaway;
+	}
 	return;
 }

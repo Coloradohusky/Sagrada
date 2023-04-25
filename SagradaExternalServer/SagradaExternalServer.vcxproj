@@ -104,13 +104,13 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)SFML\include;$(SolutionDir)Boost;$(SolutionDir)Sagrada;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)SFML\include;$(SolutionDir)Boost;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalDependencies>sfml-system-d.lib;sfml-network-d.lib;sfml-network-s-d.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>$(SolutionDir)\SFML\lib;$(SolutionDir)Boost\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(SolutionDir)SFML\lib;$(SolutionDir)Boost\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -130,33 +130,16 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\Sagrada\Custom.cpp" />
-    <ClCompile Include="..\Sagrada\DiceBag.cpp" />
-    <ClCompile Include="..\Sagrada\DicePool.cpp" />
-    <ClCompile Include="..\Sagrada\Die.cpp" />
-    <ClCompile Include="..\Sagrada\PatternCard.cpp" />
-    <ClCompile Include="..\Sagrada\Player.cpp" />
-    <ClCompile Include="..\Sagrada\PlayerBoard.cpp" />
-    <ClCompile Include="..\Sagrada\PublicObjective.cpp" />
-    <ClCompile Include="..\Sagrada\RoundTrack.cpp" />
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="sagradaUtils.cpp" />
     <ClCompile Include="Server.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\Sagrada\Custom.hpp" />
-    <ClInclude Include="..\Sagrada\DiceBag.hpp" />
-    <ClInclude Include="..\Sagrada\DicePool.hpp" />
-    <ClInclude Include="..\Sagrada\Die.hpp" />
-    <ClInclude Include="..\Sagrada\PatternCard.hpp" />
-    <ClInclude Include="..\Sagrada\Player.hpp" />
-    <ClInclude Include="..\Sagrada\PlayerBoard.hpp" />
-    <ClInclude Include="..\Sagrada\PublicObjective.hpp" />
-    <ClInclude Include="..\Sagrada\RoundTrack.hpp" />
     <ClInclude Include="Bundler.hpp" />
     <ClInclude Include="Includer.hpp" />
-    <ClInclude Include="sagradaUtils.hpp" />
     <ClInclude Include="Server.hpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="winhistory.csv" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

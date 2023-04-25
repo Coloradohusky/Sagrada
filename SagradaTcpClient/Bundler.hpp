@@ -1,6 +1,6 @@
 #pragma once
 
-//start of standard libraries
+//start of standard files
 #include <stdio.h>
 #include <vector>
 #include <iostream>
@@ -11,10 +11,8 @@
 #include <string>
 #include <Windows.h>
 #include <set>
+#include <chrono>
+#include <thread>
 
 
 //start of custom libraries
-#include "SFML/System.hpp"
-#include "SFML/Network.hpp"
-#include <boost/property_tree/ptree.hpp>
-#include <boost/property_tree/json_parser.hpp>
