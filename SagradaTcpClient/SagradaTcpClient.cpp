@@ -16,7 +16,7 @@ void SagradaTcpClient::startServer()
 	while(keepRunning)
 	{
 		socket.connect(remoteAddr, remotePort);
-
+		connected = true;
 		std::cout << "server connected\n";
 	
 		std::thread sendThread(&SagradaTcpClient::send, this);

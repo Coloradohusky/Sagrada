@@ -4,6 +4,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 VisualStudioVersion = 17.5.33516.290
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Sagrada", "Sagrada\Sagrada.vcxproj", "{49D8F2C1-2EEB-4176-85D7-2C9895C9A3B6}"
+	ProjectSection(ProjectDependencies) = postProject
+		{75E50CA0-082E-4DED-BD74-76B5E5D5DCCB} = {75E50CA0-082E-4DED-BD74-76B5E5D5DCCB}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SagradaExternalServer", "SagradaExternalServer\SagradaExternalServer.vcxproj", "{CC91C14E-A702-435D-843D-14B9DA32B5D5}"
 EndProject

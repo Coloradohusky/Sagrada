@@ -9,7 +9,7 @@
 
 // 1920x1080 = 16:9
 // 240:127 = fullscreen on 16:9
-const double ratio = 9.0 / 16.0;
+const double ratio = 127.0 / 240.0;
 const int DEFAULT_SCREEN_WIDTH = 1120;
 extern int SCREEN_WIDTH;
 extern int SCREEN_HEIGHT;

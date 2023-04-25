@@ -20,6 +20,7 @@
 #include "PlayerBoard.hpp"
 #include "PublicObjective.hpp"
 #include "RoundTrack.hpp"
+#include "../SagradaTcpClient/SagradaTcpClient.hpp"
 
 int main();
 
@@ -117,6 +118,10 @@ int main() {
 	publicObjectives.clear();
 	toolCards.clear();
 
+	// open client
+	SagradaTcpClient client("25.49.77.220", 46580);
+	std::thread tcpClient(&SagradaTcpClient::startServer, &client);
+
 	// draw window loop
     while (window.isOpen()) {
         sf::Event event;
@@ -136,6 +141,8 @@ int main() {
         window.clear();
 		window.draw(background);
 		if (playerCount == 0 && inMenu == 0) { // start menu
+			//*client.getOutBoundStream() << "(upd,)";
+			//std::cout << "sent";
 			sf::Text playerText[4];
 			playerText[0].setFont(font);
 			playerText[0].setString("players");
@@ -437,7 +444,6 @@ int main() {
 					roundTrackDieOutline.setSize(sf::Vector2f(roundTrackDieSize, roundTrackDieSize));
 					if (roundTrackDieOutline.getGlobalBounds().contains((sf::Vector2f)sf::Mouse::getPosition(window))) {
 						if (sf::Mouse::isButtonPressed(sf::Mouse::Left)) { //switch between selected die
-							// TODO: add option to skip turn
 						}
 						// color on hover
 						roundTrackDieOutlineColor = sf::Color::Yellow;
@@ -617,6 +623,8 @@ int main() {
 			}
 		}
 		else { // the game is over - tally up points and declare the winner
+			// (\"id,score,isWinner\", ...) // int id, int score, bool isWinner (there can be two+ winners if there's a tie)
+			*client.getOutBoundStream() << "(upd,)";
 			float playerScoreMargin = SCREEN_WIDTH / 40.0;
 			float playerScoreWidth = (SCREEN_WIDTH / 4.0) - playerScoreMargin;
 			float playerScoreHeight = SCREEN_HEIGHT / 1.75;
@@ -826,5 +834,10 @@ int main() {
 		}
         window.display();
     }
+
+	// terminate server
+	client.killserver();
+	tcpClient.join();
+
     return 0;
 }
