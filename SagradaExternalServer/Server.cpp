@@ -15,11 +15,6 @@ Server::~Server()
 {
 }
 
-std::stringstream* Server::getOutStream()
-{
-	return &outStream;
-}
-
 void Server::start()
 {
 	while (keepRunning)
@@ -38,7 +33,7 @@ void Server::start()
 		listen.accept(serverSock);
 		connected = true;
  		
-		std::cout << "client One connected: " << serverSock.getRemoteAddress() << " port: " << listenPort << std::endl;
+		std::cout << "client connected: " << serverSock.getRemoteAddress() << " port: " << listenPort << std::endl;
 
 
 		//start the threads responsible for sending and receiving for simplicitys sake send will invoke the server update functions apart
