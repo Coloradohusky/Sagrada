@@ -36,6 +36,7 @@ void Server::start()
 		sf::TcpListener listen;
 		listen.listen(listenPort);
 		listen.accept(serverSock);
+		connected = true;
  		
 		std::cout << "client One connected: " << serverSock.getRemoteAddress() << " port: " << listenPort << std::endl;
 
@@ -46,6 +47,7 @@ void Server::start()
 		std::thread recvThread(&Server::receive, this);
 		sendThread.join();
 		recvThread.join();
+		std::cout << "returning to waiting state\n";
 		writeToCsv();
 	}
 	return;
@@ -297,7 +299,8 @@ void Server::readIntoOutstream()
 
 void Server::prepSendBuf()
 {
-	if (outStream.eof()) 
+	//commenting out as server does not need to return messages
+	/*if (outStream.eof()) 
 	{
 		sendBuf.sendFlag = false;
 		return;
@@ -309,7 +312,7 @@ void Server::prepSendBuf()
 		++i;
 	}
 	sendBuf.sendMsg[i-1] = '\0';
-	sendBuf.sendFlag = true;
+	sendBuf.sendFlag = true;*/
 	return;
 }
 
