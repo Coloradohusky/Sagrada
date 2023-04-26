@@ -113,7 +113,7 @@ sf::Color Die::getFillColor() {
 	else if (color == "Yellow") {
 		return yellow;
 	}
-	return sf::Color::Black;
+	return lightGray;
 }
 
 int Die::getNumber() {

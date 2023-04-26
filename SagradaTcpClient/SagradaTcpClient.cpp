@@ -37,7 +37,7 @@ void SagradaTcpClient::killserver()
 	socket.disconnect();
 }
 
-void SagradaTcpClient::sendMessage(char* string)
+void SagradaTcpClient::sendMessage(const char* string)
 {
 	int length = strlen(string);
 	if (length <= 0) 

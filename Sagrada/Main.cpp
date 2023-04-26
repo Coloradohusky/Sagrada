@@ -322,7 +322,7 @@ int main() {
 					privColor.setOutlineThickness(1);
 					privColor.setOutlineColor(sf::Color::Black);
 					privColor.setPosition(SCREEN_WIDTH / 2.0, SCREEN_HEIGHT / 1.5);
-					privColor.setFillColor(players.at(i).getPrivateObjective());
+					privColor.setFillColor(players.at(i).getPrivateObjectiveFillColor());
 					window.draw(privColor);
 					if (selected != 0) {
 						players[i].setFrame(selectedPatternCards[i * 4 + selected - 1].getDice());
@@ -457,7 +457,7 @@ int main() {
 				}
 				// draw token count and private objective in bottom of the board outline
 				sf::RectangleShape privObj;
-				privObj.setFillColor(players.at(currentPlayer - 1).getPrivateObjective());
+				privObj.setFillColor(players.at(currentPlayer - 1).getPrivateObjectiveFillColor());
 				privObj.setSize(sf::Vector2f(boardWidth / 1.5, boardWidth / 9.0));
 				privObj.setPosition(SCREEN_WIDTH - margin * 1.7 - boardWidth / 1.5, 0 - margin * 2.75 + boardHeight);
 				privObj.setOutlineThickness(1);
@@ -618,7 +618,6 @@ int main() {
 			}
 		}
 		else { // the game is over - tally up points and declare the winner
-			*client.getOutBoundStream() << "(upd,)";
 			double playerScoreMargin = SCREEN_WIDTH / 40.0;
 			double playerScoreWidth = (SCREEN_WIDTH / 4.0) - playerScoreMargin;
 			double playerScoreHeight = SCREEN_HEIGHT / 1.75;
@@ -632,7 +631,7 @@ int main() {
 				sf::ConvexShape playerScoreOutline;
 				double playerScoreX = startX + (playerScoreWidth + playerScoreMargin) * i;
 				double playerScoreY = playerScoreMargin / 2.0;
-				playerScoreOutline = RoundedRectangle(playerScoreX, playerScoreY, playerScoreWidth, playerScoreHeight, 10, players.at(i).getPrivateObjective(), 2, sf::Color::Black);
+				playerScoreOutline = RoundedRectangle(playerScoreX, playerScoreY, playerScoreWidth, playerScoreHeight, 10, players.at(i).getPrivateObjectiveFillColor(), 2, sf::Color::Black);
 				window.draw(playerScoreOutline);
 				// draw player name (#)
 				sf::Text playerText;
@@ -843,7 +842,7 @@ int main() {
 					}
 				}
 				toSend.append(")");
-				*client.getOutBoundStream() << toSend;
+				client.sendMessage(toSend.c_str());
 				winnerHasSent = true;
 			}
 			if (sf::Mouse::isButtonPressed(sf::Mouse::Right)) { // right-click to exit the game

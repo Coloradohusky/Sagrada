@@ -208,6 +208,7 @@ void fillFrameArray(boost::property_tree::ptree& pt, std::vector<PatternCard>* f
 	}
 }
 
+// Draws window frames
 int drawFrame(std::string frameName, std::vector<std::vector<Die>> frameBoard, int frameTokens, sf::RenderWindow* window, int position) {
 	double ratio = 2.5;
 
@@ -271,6 +272,7 @@ int drawFrame(std::string frameName, std::vector<std::vector<Die>> frameBoard, i
 	return 0;
 }
 
+// Draws dice board (also used when drawing window frames)
 std::vector<int> drawBoard(std::vector<std::vector<Die>> frameBoard, sf::RenderWindow* window, sf::ConvexShape border, Die selectedDie) {
 	std::vector<std::vector<bool>> clickable = determinePlacementSpots(frameBoard, selectedDie, "None");
 	double squareSize = border.getGlobalBounds().height / ((frameBoard.size() + 1.0) * 1.25);
@@ -296,28 +298,14 @@ std::vector<int> drawBoard(std::vector<std::vector<Die>> frameBoard, sf::RenderW
 	return std::vector<int>();
 }
 
+// Draws one die
 sf::RectangleShape drawDie(Die currentDie, double size, double x, double y, sf::Color isClickableOutlineColor, Die selectedDie, sf::RenderWindow* window) {
 	sf::RectangleShape square(sf::Vector2f(size, size));
 	square.setPosition(x, y);
 	square.setOutlineColor(mediumGray);
 	square.setOutlineThickness(2);
-	square.setFillColor(lightGray);
 	// Set fill color, draw dots
-	if (currentDie.getColor() == "Blue") {
-		square.setFillColor(blue);
-	}
-	else if (currentDie.getColor() == "Red") {
-		square.setFillColor(red);
-	}
-	else if (currentDie.getColor() == "Green") {
-		square.setFillColor(green);
-	}
-	else if (currentDie.getColor() == "Purple") {
-		square.setFillColor(purple);
-	}
-	else if (currentDie.getColor() == "Yellow") {
-		square.setFillColor(yellow);
-	}
+	square.setFillColor(currentDie.getFillColor());
 	sf::CircleShape dotCircle;
 	dotCircle.setRadius(square.getGlobalBounds().height / 10.0);
 	dotCircle.setFillColor(sf::Color::Black);

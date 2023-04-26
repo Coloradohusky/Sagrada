@@ -51,7 +51,7 @@ int Player::getTokens() {
     return favorTokens;
 }
 
-sf::Color Player::getPrivateObjective() {
+sf::Color Player::getPrivateObjectiveFillColor() {
 	if (privateObjective == "Blue") {
 		return blue;
 	}
@@ -70,6 +70,10 @@ sf::Color Player::getPrivateObjective() {
 	else {
 		return sf::Color::Black;
 	}
+}
+
+std::string Player::getPrivateObjective() {
+	return privateObjective;
 }
 
 PlayerBoard Player::getBoard() {

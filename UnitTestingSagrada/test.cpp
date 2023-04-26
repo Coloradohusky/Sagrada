@@ -1,7 +1,7 @@
 #include "pch.h"
 
 // example test
-TEST(TestCaseName, TestName) {
+TEST(ExampleTest, ExampleTestName) {
   EXPECT_EQ(1, 1);
   EXPECT_TRUE(true);
 }
@@ -66,4 +66,23 @@ TEST(PlayerBoardTest, TestCounts) {
     ASSERT_EQ(board.countColor("Green"), 6);
     ASSERT_EQ(board.countColorSum("Green"), 20);
     ASSERT_EQ(board.getDice().size(), testBoard.size());
+}
+
+TEST(PlayerTest, TestGetters) {
+    Player player(1);
+    player.setPrivateObjective("Green");
+    player.setTokens(5);
+    ASSERT_EQ(player.getPrivateObjective(), "Green");
+    ASSERT_EQ(player.getPrivateObjectiveFillColor(), green);
+    ASSERT_EQ(player.getTokens(), 5);
+}
+
+TEST(PublicObjectiveTest, TestGetters) {
+    PublicObjective p;
+    p.setDescription("This is a public objective.");
+    p.setName("Public Objective");
+    p.setPoints("#");
+    ASSERT_EQ(p.getDescription(), "This is a public objective.");
+    ASSERT_EQ(p.getName(), "Public Objective");
+    ASSERT_EQ(p.getPoints(), "#");
 }

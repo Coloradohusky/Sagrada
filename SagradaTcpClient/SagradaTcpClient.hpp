@@ -21,7 +21,7 @@ public:
 
 	void startServer();
 	void killserver();
-	void sendMessage(char* string);
+	void sendMessage(const char* string);
 
 private:
 

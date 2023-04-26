@@ -20,7 +20,8 @@ public:
     void setPrivateObjectivePoints(int points);
     bool boardIsEmpty();
     int getTokens();
-    sf::Color getPrivateObjective();
+    sf::Color getPrivateObjectiveFillColor();
+    std::string getPrivateObjective();
     PlayerBoard getBoard();
     int getTotalPoints(std::vector<PublicObjective> selectedPublicObjectives);
     int getTotalPoints();
