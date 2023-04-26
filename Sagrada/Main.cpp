@@ -52,7 +52,7 @@ int main() {
 	boost::property_tree::ptree toolCards;
 	read_json("toolCards.json", toolCards);
 	toolCards.erase("Blank");
-	// if I had more time, I'd abstract a lot of this into a GameBoard class, maybe a Menu class
+	// todo: abstract into a GameBoard class, maybe a Menu class as well
 	std::vector<Player> players = { Player(1), Player(2), Player(3), Player(4) };
 	std::vector<std::string> private_colors = {"Blue", "Red", "Green", "Purple", "Yellow"};
 	std::shuffle(std::begin(private_colors), std::end(private_colors), std::mt19937(static_cast<uint32_t>(time(0))));
@@ -126,8 +126,7 @@ int main() {
 	// draw window loop
     while (window.isOpen()) {
         sf::Event event;
-        while (window.pollEvent(event))
-        {
+        while (window.pollEvent(event)) {
             if (event.type == sf::Event::Closed)
                 window.close();
 			if (event.type == sf::Event::Resized) { // allows for dynamic resizing
@@ -831,7 +830,7 @@ int main() {
 						toSend.append("EMPTY,0,false,");
 					}
 					else {
-						toSend.append(std::to_string(p) + ",");
+						toSend.append("Player " + std::to_string(p) + ",");
 						toSend.append(std::to_string(players.at(p - 1).getTotalPoints()) + ",");
 						if (boolWinners.at(p - 1) == false) { // to_string turns it into 1 and 0
 							toSend.append("false,");
@@ -842,6 +841,7 @@ int main() {
 					}
 				}
 				toSend.append(")");
+				std::cout << toSend << std::endl;
 				client.sendMessage(toSend.c_str());
 				winnerHasSent = true;
 			}

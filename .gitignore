@@ -363,6 +363,7 @@ MigrationBackup/
 FodyWeavers.xsd
 
 ## Extra
+!packages
 !Boost/boost/preprocessor/debug/
 Boost/doc/
 Boost/lib/

@@ -87,7 +87,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Console</SubSystem>
       <AdditionalLibraryDirectories>$(SolutionDir)Sagrada\x64\Debug;$(SolutionDir)Boost\lib;$(SolutionDir)SFML\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>Custom.obj;DiceBag.obj;DicePool.obj;Die.obj;PatternCard.obj;Player.obj;PlayerBoard.obj;PublicObjective.obj;RoundTrack.obj;sfml-graphics-d.lib;sfml-window-d.lib;sfml-system-d.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>Custom.obj;DiceBag.obj;DicePool.obj;Die.obj;PatternCard.obj;Player.obj;PlayerBoard.obj;PublicObjective.obj;RoundTrack.obj;sfml-graphics-d.lib;sfml-window-d.lib;sfml-system-d.lib;$(MSBuildThisFileDirectory)..\..\lib\native\v140\windesktop\msvcstl\static\rt-dyn\x64\Debug\gtest_maind.lib;$(MSBuildThisFileDirectory)..\..\lib\native\v140\windesktop\msvcstl\static\rt-dyn\x64\Debug\gtestd.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
