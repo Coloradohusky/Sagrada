@@ -4,6 +4,8 @@
 #include "PublicObjective.hpp"
 #include <vector>
 
+#pragma warning(disable: 4267)
+
 class Player
 {
 public:

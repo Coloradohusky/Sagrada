@@ -3,13 +3,13 @@
 int SCREEN_WIDTH = 1120;
 int SCREEN_HEIGHT = SCREEN_WIDTH * ratio;
 
-sf::ConvexShape RoundedRectangle(float x, float y, float rectWidth, float rectHeight, float radius, const sf::Color& shapeColor, float outline, const sf::Color& outlineCol) {
+sf::ConvexShape RoundedRectangle(double x, double y, double rectWidth, double rectHeight, double radius, const sf::Color& shapeColor, double outline, const sf::Color& outlineCol) {
 	int totalPoints = 40;
 	sf::ConvexShape rrect;
 	rrect.setOutlineThickness(outline);
 	rrect.setFillColor(shapeColor);
 	rrect.setOutlineColor(outlineCol);
-	float X = 0, Y = 0;
+	double X = 0, Y = 0;
 	int total = 0;
 	rrect.setPointCount(totalPoints);
 	for (int i = 0; i < (totalPoints / 4); i++) {
@@ -273,7 +273,7 @@ int drawFrame(std::string frameName, std::vector<std::vector<Die>> frameBoard, i
 
 std::vector<int> drawBoard(std::vector<std::vector<Die>> frameBoard, sf::RenderWindow* window, sf::ConvexShape border, Die selectedDie) {
 	std::vector<std::vector<bool>> clickable = determinePlacementSpots(frameBoard, selectedDie, "None");
-	float squareSize = border.getGlobalBounds().height / ((frameBoard.size() + 1.0) * 1.25);
+	double squareSize = border.getGlobalBounds().height / ((frameBoard.size() + 1.0) * 1.25);
 	sf::RectangleShape square(sf::Vector2f(squareSize, squareSize));
 	double startX = border.getGlobalBounds().left + SCREEN_WIDTH / margin * 2.5;
 	double startY = border.getGlobalBounds().top + SCREEN_HEIGHT / margin * 1.75;
@@ -296,7 +296,7 @@ std::vector<int> drawBoard(std::vector<std::vector<Die>> frameBoard, sf::RenderW
 	return std::vector<int>();
 }
 
-sf::RectangleShape drawDie(Die currentDie, float size, float x, float y, sf::Color isClickableOutlineColor, Die selectedDie, sf::RenderWindow* window) {
+sf::RectangleShape drawDie(Die currentDie, double size, double x, double y, sf::Color isClickableOutlineColor, Die selectedDie, sf::RenderWindow* window) {
 	sf::RectangleShape square(sf::Vector2f(size, size));
 	square.setPosition(x, y);
 	square.setOutlineColor(mediumGray);
@@ -321,11 +321,14 @@ sf::RectangleShape drawDie(Die currentDie, float size, float x, float y, sf::Col
 	sf::CircleShape dotCircle;
 	dotCircle.setRadius(square.getGlobalBounds().height / 10.0);
 	dotCircle.setFillColor(sf::Color::Black);
-	float dotMargin = square.getSize().x / 18.f;
+	double dotMargin = square.getSize().x / 18.f;
 	if (currentDie.getNumber() != 0 && currentDie.getColor() == "") {
 		square.setFillColor(sf::Color(74, 79, 78, 255));
 	}
 	square.setOutlineColor(isClickableOutlineColor);
+	if (window == NULL) { // used when finding the random positions for the dice
+		return square;
+	}
 	if (square.getGlobalBounds().contains((sf::Vector2f)sf::Mouse::getPosition(*window)) && selectedDie.isFull()) {
 		if (sf::Mouse::isButtonPressed(sf::Mouse::Left) && isClickableOutlineColor == sf::Color::Green) { // click draft pool die
 			square.setFillColor(sf::Color::White); // the die has been clicked!

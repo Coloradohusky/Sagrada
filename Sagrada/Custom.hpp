@@ -7,10 +7,16 @@
 #include "PatternCard.hpp"
 #include "PublicObjective.hpp"
 
+#pragma warning(disable: 4244)
+#pragma warning(disable: 4267)
+#pragma warning(disable: 4305)
+#pragma warning(disable: 26451)
+
 // 1920x1080 = 16:9
 // 240:127 = fullscreen on 16:9
 const double ratio = 127.0 / 240.0;
 const int DEFAULT_SCREEN_WIDTH = 1120;
+const int DEFAULT_SCREEN_HEIGHT = 630;
 extern int SCREEN_WIDTH;
 extern int SCREEN_HEIGHT;
 const int sleepTime = 200;
@@ -26,7 +32,7 @@ const sf::Color yellow(243, 222, 12, 255);
 const sf::Color lightGray(202, 206, 205, 255);
 const sf::Color mediumGray(99, 105, 104, 255);
 
-sf::ConvexShape RoundedRectangle(float x, float y, float rectWidth, float rectHeight, float radius, const sf::Color& shapeColor, float outline = 0.f, const sf::Color& outlineCol = sf::Color(0, 0, 0));
+sf::ConvexShape RoundedRectangle(double x, double y, double rectWidth, double rectHeight, double radius, const sf::Color& shapeColor, double outline = 0.f, const sf::Color& outlineCol = sf::Color(0, 0, 0));
 
 bool MouseInConvexShape(sf::ConvexShape shape, sf::Window* window);
 
@@ -38,4 +44,4 @@ int drawFrame(std::string frameName, std::vector<std::vector<Die>> frameBoard, i
 
 std::vector<int> drawBoard(std::vector<std::vector<Die>> frameBoard, sf::RenderWindow* window, sf::ConvexShape border, Die selectedDie);
 
-sf::RectangleShape drawDie(Die currentDie, float size, float x, float y, sf::Color isClickableOutlineColor, Die selectedDie, sf::RenderWindow* window);
+sf::RectangleShape drawDie(Die currentDie, double size, double x, double y, sf::Color isClickableOutlineColor, Die selectedDie, sf::RenderWindow* window);
