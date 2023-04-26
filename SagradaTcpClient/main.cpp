@@ -9,7 +9,8 @@ int main(void)
 	while (true) 
 	{
 		std::this_thread::sleep_for(std::chrono::seconds(1));
-		*client.getOutBoundStream() << "(pst,ClientPlayer1,696969,1,clientplayer2,42069,1,clientplayer3,420420,1,clientplayer4,51224,0,)";
+		std::string message = "(pst,ClientPlayer1,696969,1,clientplayer2,42069,1,clientplayer3,420420,1,clientplayer4,51224,0,)";
+		client.sendMessage((char*)message.c_str());
 	}
 	svr.join();
 	return 0;

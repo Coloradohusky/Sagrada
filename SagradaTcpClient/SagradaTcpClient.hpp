@@ -21,16 +21,13 @@ public:
 
 	void startServer();
 	void killserver();
-	std::stringstream* getOutBoundStream();
-
+	void sendMessage(char* string);
 
 private:
 
 	void send();
 
 	void receive();
-
-	void prepareSendBuf();
 
 	void readbufferIntoStream(char arr[], int sizearr, std::stringstream& stream, char packetDelim, int& waitingPackets);
 

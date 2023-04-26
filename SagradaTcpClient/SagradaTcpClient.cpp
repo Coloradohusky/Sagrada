@@ -37,26 +37,32 @@ void SagradaTcpClient::killserver()
 	socket.disconnect();
 }
 
-std::stringstream* SagradaTcpClient::getOutBoundStream()
+void SagradaTcpClient::sendMessage(char* string)
 {
-	return &outBoundStream;
+	int length = strlen(string);
+	if (length <= 0) 
+	{
+		sendFlag = false;
+		return;
+	}
+	int i = 0;
+	for (; i < 1023 && i < length; ++i) 
+	{
+		sendBuf[i] = string[i];
+	}
+	sendBuf[i+1] = '\0';
+	sendFlag = true;
+	return;
 }
 
 void SagradaTcpClient::send()
 {
 	while (keepRunning && connected) 
 	{
-		std::this_thread::sleep_for(std::chrono::seconds(1));
-		prepareSendBuf();
+		std::this_thread::sleep_for(std::chrono::milliseconds(10));
 		if (sendFlag == true) 
 		{
 			size_t characters = strlen(sendBuf);
-			if (characters <= 0) 
-			{
-				std::cout << "nothing to send\n";
-				sendFlag = false;
-				continue;
-			}
 			auto status = socket.send(sendBuf, characters);
 			std::cout << "send bytes:" << characters << std::endl;
 			#ifdef TCP_CLIENT_DEBUG
@@ -119,21 +125,6 @@ void SagradaTcpClient::receive()
 	return;
 }
 
-void SagradaTcpClient::prepareSendBuf()
-{
-	for (int i = 0; i < sizeof(sendBuf); ++i) 
-	{
-		sendBuf[i] = '\0';
-	}
-	outBoundStream.clear();
-	for (int i = 0; i < sizeof(sendBuf); ++i)
-	{
-		outBoundStream >> sendBuf[i];
-	}
-	sendFlag = true;
-	return;
-}
-
 void SagradaTcpClient::readbufferIntoStream(char arr[], int sizearr, std::stringstream& stream, char packetDelim, int& waitingPackets)
 {
 	char screener = 'a';
@@ -151,6 +142,8 @@ void SagradaTcpClient::readbufferIntoStream(char arr[], int sizearr, std::string
 
 void SagradaTcpClient::readIncomingBuffer()
 {
+
+	//irrelevant since never expect a message to be sent to the client
 	while (inboundMessagesWaiting > 0) 
 	{
 		WinLossEntry winloss;
