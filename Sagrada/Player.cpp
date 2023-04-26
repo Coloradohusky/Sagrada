@@ -88,6 +88,7 @@ int Player::getPublicObjectivePoints(int index) {
 	if (index > -1 && index < publicObjectivePoints.size()) {
 		return publicObjectivePoints.at(index);
 	}
+	return 0;
 }
 
 int Player::getTotalPoints(std::vector<PublicObjective> selectedPublicObjectives) {
