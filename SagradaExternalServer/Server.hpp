@@ -9,12 +9,29 @@ struct sendData
 	char sendMsg[1024];
 };
 
+
+//(pst,p1,p1score,true/false,p2,p2score,true/false,p3,p3score,true/false,p4,p4score,true/false,)
 struct LeaderBoardEntry 
 {
-	std::string firstPlace;
-	std::string secondPlace;
-	std::string	thirdPlace;
-	std::string fourthPlace;
+	//first place
+	std::string p1;
+	int p1Score;
+	bool p1IsWinner;
+
+	//second place
+	std::string p2;
+	int p2Score;
+	bool p2IsWinner;
+
+	//third place
+	std::string	p3;
+	int p3Score;
+	bool p3IsWinner;
+
+	//fourth place
+	std::string p4;
+	int p4Score;
+	bool p4IsWinner;
 };
 
 
@@ -27,7 +44,8 @@ public:
 	Server(int listenPort);
 	~Server();
 
-	
+	std::stringstream* getOutStream();
+
 	void start();
 
 private:

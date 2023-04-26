@@ -52,11 +52,11 @@ int main() {
 	boost::property_tree::ptree toolCards;
 	read_json("toolCards.json", toolCards);
 	toolCards.erase("Blank");
-
+	// if I had more time, I'd abstract a lot of this into a GameBoard class, maybe a Menu class
 	std::vector<Player> players = { Player(1), Player(2), Player(3), Player(4) };
 	std::vector<std::string> private_colors = {"Blue", "Red", "Green", "Purple", "Yellow"};
 	std::shuffle(std::begin(private_colors), std::end(private_colors), std::mt19937(static_cast<uint32_t>(time(0))));
-	// Only done on host computer
+	
 	for (int i = 0; i < players.size(); i++) {
 		players[i].setPrivateObjective(private_colors[0]);
 		private_colors.erase(private_colors.begin());
@@ -76,11 +76,12 @@ int main() {
 	int currentTurn = 1;
 	int playGame = 0;
 	int currentPlayerIsDone = 0;
+	bool winnerHasSent = false;
 	std::vector<int> playerOrder;
 	std::vector<sf::RectangleShape> dicePoolShapes;
 	int selectedDieIndex = -1;
 
-	// This only needs to be done on host computer, then sent out to player computers
+	// select 16 random window frames
 	for (int i = 0; i < 8; i++) {
 		int randomNumber = patternDist(mt);
 		while (windowFrames.find(std::to_string(randomNumber)) == windowFrames.not_found()) {
@@ -101,7 +102,7 @@ int main() {
 		windowFrames.erase(std::to_string(randomNumber));
 	}
 
-	// Same thing here - host only
+	// select three random public objectives
 	for (int i = 0; i < 3; i++) {
 		int randomNumber = objectiveDist(mt);
 		while (publicObjectives.find(std::to_string(randomNumber)) == publicObjectives.not_found()) {
@@ -129,9 +130,9 @@ int main() {
         {
             if (event.type == sf::Event::Closed)
                 window.close();
-			if (event.type == sf::Event::Resized) {
+			if (event.type == sf::Event::Resized) { // allows for dynamic resizing
 				SCREEN_WIDTH = window.getSize().x;
-				SCREEN_HEIGHT = SCREEN_WIDTH * ratio;
+				SCREEN_HEIGHT = (int)((double)SCREEN_WIDTH * ratio); // locked to a certain aspect ratio
 				window.setSize(sf::Vector2u(SCREEN_WIDTH, SCREEN_HEIGHT));
 				window.setView(sf::View(sf::FloatRect(0.0, 0.0, SCREEN_WIDTH, SCREEN_HEIGHT)));
 				background.setSize(sf::Vector2f(SCREEN_WIDTH, SCREEN_HEIGHT));
@@ -172,16 +173,16 @@ int main() {
 			playerButtons[2] = RoundedRectangle(middleButtonXCoord + buttonWidth + buttonMargin, SCREEN_HEIGHT / 1.8,
 				buttonWidth, buttonHeight, 10,
 				darkGray, 2, sf::Color::Black);
-			playerButtons[3] = RoundedRectangle(4, 4, buttonWidth / 1.5, buttonHeight / 3, 10,
+			playerButtons[3] = RoundedRectangle(4, 4, buttonWidth / 1.5, buttonHeight / 3.0, 10,
 				darkGray, 2, sf::Color::Black);
 			for (int i = 0; i < 3; i++) {
 				sf::FloatRect textBounds = playerText[i].getLocalBounds();
 				sf::FloatRect shapeBounds = playerButtons[i].getLocalBounds();
-				float bottom = shapeBounds.top + shapeBounds.height * 4 / 5;
-				playerText[i].setPosition(shapeBounds.left + shapeBounds.width / 2 - textBounds.width / 2, bottom - textBounds.height / 2);
+				double bottom = shapeBounds.top + shapeBounds.height * 4 / 5;
+				playerText[i].setPosition((float)(shapeBounds.left + shapeBounds.width / 2.0 - textBounds.width / 2.0), (float)(bottom - textBounds.height / 2.0));
 				otherPlayerText[i].setString(std::to_string(i + 2));
 				sf::FloatRect otherTextBounds = otherPlayerText[i].getLocalBounds();
-				otherPlayerText[i].setPosition(shapeBounds.left + shapeBounds.width / 2 - otherTextBounds.width / 2, shapeBounds.top + shapeBounds.height / 4 - otherTextBounds.height / 2);
+				otherPlayerText[i].setPosition((float)(shapeBounds.left + shapeBounds.width / 2.0 - otherTextBounds.width / 2.0), (float)(shapeBounds.top + shapeBounds.height / 4.0 - otherTextBounds.height / 2.0));
 			}
 			sf::Texture* logoTexture = new sf::Texture();
 			sf::RectangleShape logoRect;
@@ -189,7 +190,7 @@ int main() {
 			int logoWidth = SCREEN_WIDTH * (5.0 / 12.0);
 			int logoHeight = logoWidth * (9.0 / 16.0);
 			logoRect.setSize(sf::Vector2f(logoWidth, logoHeight));
-			logoRect.setPosition(sf::Vector2f((SCREEN_WIDTH / 2) - (logoWidth / 2), (SCREEN_HEIGHT / 8) - (logoHeight / 8)));
+			logoRect.setPosition(sf::Vector2f((SCREEN_WIDTH / 2.0) - (logoWidth / 2.0), (SCREEN_HEIGHT / 8.0) - (logoHeight / 8.0)));
 			logoTexture->loadFromFile("SagradaLogo.png");
 			logoRect.setTexture(logoTexture);
 			playerButtons[0].setOutlineColor(sf::Color::Black);
@@ -204,7 +205,7 @@ int main() {
 			playerText[3].setString("Help?");
 			sf::FloatRect textBounds = playerText[3].getLocalBounds();
 			sf::FloatRect shapeBounds = playerButtons[3].getLocalBounds();
-			playerText[3].setPosition(shapeBounds.left + shapeBounds.width / 2 - textBounds.width / 2, textBounds.height / 16);
+			playerText[3].setPosition(shapeBounds.left + shapeBounds.width / 2.0 - textBounds.width / 2.0, textBounds.height / 16.0);
 
 			if (MouseInConvexShape(playerButtons[0], &window)) {
 				if (sf::Mouse::isButtonPressed(sf::Mouse::Left)) {
@@ -250,25 +251,23 @@ int main() {
 		}
 		else if (inMenu == 1) { // help menu
 			sf::Text menuText[2];
-			sf::ConvexShape playerButton;
-			sf::Text playerText;
+			sf::ConvexShape backButton;
+			sf::Text backButtonText;
 			int buttonWidth = SCREEN_WIDTH / 7.5;
 			int buttonHeight = SCREEN_HEIGHT / 9.375;
-			playerButton = RoundedRectangle(SCREEN_WIDTH - buttonWidth * 1.5, SCREEN_HEIGHT - buttonHeight * 1.5, buttonWidth, buttonHeight, 10,
+			backButton = RoundedRectangle(SCREEN_WIDTH - buttonWidth * 1.5, SCREEN_HEIGHT - buttonHeight * 1.5, buttonWidth, buttonHeight, 10,
 				darkGray, 2, sf::Color::Black);
-			playerButton.setOutlineColor(sf::Color::Black);
-
-			playerText.setFont(font);
-			playerText.setCharacterSize(50.0 * ((double)SCREEN_WIDTH / (double)DEFAULT_SCREEN_WIDTH));
-			playerText.setFillColor(sf::Color::Black);
-			playerText.setStyle(sf::Text::Bold);
-			playerText.setString("Back");
-			sf::FloatRect textBounds = playerText.getLocalBounds();
-			sf::FloatRect shapeBounds = playerButton.getLocalBounds();
-			playerText.setPosition(shapeBounds.left + shapeBounds.width / 2 - textBounds.width / 2, shapeBounds.top);
-
+			backButton.setOutlineColor(sf::Color::Black);
+			backButtonText.setFont(font);
+			backButtonText.setCharacterSize(46.0 * ((double)SCREEN_HEIGHT / ((double)DEFAULT_SCREEN_WIDTH * ratio)));
+			backButtonText.setFillColor(sf::Color::Black);
+			backButtonText.setStyle(sf::Text::Bold);
+			backButtonText.setString("Back");
+			sf::FloatRect textBounds = backButtonText.getLocalBounds();
+			sf::FloatRect shapeBounds = backButton.getLocalBounds();
+			backButtonText.setPosition(shapeBounds.left + shapeBounds.width / 2 - textBounds.width / 2, shapeBounds.top);
 			menuText[0].setFont(font);
-			menuText[0].setCharacterSize(25.0 * ((double)SCREEN_WIDTH / (double)DEFAULT_SCREEN_WIDTH));
+			menuText[0].setCharacterSize(23.0 * ((double)SCREEN_HEIGHT / ((double)DEFAULT_SCREEN_WIDTH * ratio)));
 			menuText[0].setFillColor(sf::Color::Black);
 			menuText[0].setStyle(sf::Text::Bold);
 			menuText[0].setString("How to play! \n1. Pick your desired player count. \n2. Have each player select their Window! \nThe bottom right of each window displays \nit's difficulty from 3 "
@@ -277,7 +276,6 @@ int main() {
 				" placed on the track (this can be viewed \nat the bottom right of the player screen). \nIf there are more than one die remaining, \nonly one gets put on the track. This \nis "
 				"considered the end of the round. \n5. Repeat steps 3 - 5 until 10 rounds have \nbeen completed. \n6. Scores will be calculated and the winner \nwill be revealed!");
 			menuText[0].setPosition(10, 10);
-
 			menuText[1].setFont(font);
 			menuText[1].setCharacterSize(25.0 * ((double)SCREEN_WIDTH / (double)DEFAULT_SCREEN_WIDTH));
 			menuText[1].setFillColor(sf::Color::Black);
@@ -286,19 +284,17 @@ int main() {
 				" previously placed die, touching \ndiagonally or orthogonally.\n*The die must match the color or \nvalue of the space. Grey spaces \nhave no restrictions \n*Dice may never be placed \n"
 				"orthogonally adjecent to a die of \nthe same color or the same value. \n**NOTE: You can choose to not \ndraft a die by right clicking during \nyour turn.");
 			menuText[1].setPosition(SCREEN_WIDTH / 1.75, 10);
-
-			if (MouseInConvexShape(playerButton, &window)) {
-				if (sf::Mouse::isButtonPressed(sf::Mouse::Left)) {
+			if (MouseInConvexShape(backButton, &window)) {
+				if (sf::Mouse::isButtonPressed(sf::Mouse::Left)) { // exit menu
 					inMenu = 0;
 					Sleep(sleepTime);
 				}
-				playerButton.setOutlineColor(sf::Color::Yellow);
+				backButton.setOutlineColor(sf::Color::Yellow);
 			}
-
 			window.draw(menuText[0]);
 			window.draw(menuText[1]);
-			window.draw(playerButton);
-			window.draw(playerText);
+			window.draw(backButton);
+			window.draw(backButtonText);
 		}
 		else if (playGame != playerCount - 1) { // let each player choose their window frame
 			while (players.size() != playerCount) { // remove extra players if needed
@@ -409,22 +405,23 @@ int main() {
 			else if (currentPlayer != 0) {
 				// draw player board within boardOutline
 				sf::ConvexShape boardOutline;
-				float percentage = (float)SCREEN_WIDTH / (float)DEFAULT_SCREEN_WIDTH;
-				float margin = 20.0 * percentage;
-				float boardHeight = 400.0 * percentage;
-				float boardWidth = 450.0 * percentage;
+				double widthPercentage = (double)SCREEN_WIDTH / (double)DEFAULT_SCREEN_WIDTH;
+				double heightPercentage = (double)SCREEN_HEIGHT / (double)DEFAULT_SCREEN_HEIGHT;
+				double margin = 20.0 * widthPercentage;
+				double boardHeight = 400.0 * heightPercentage;
+				double boardWidth = 450.0 * widthPercentage;
 				boardOutline.setOrigin(boardWidth, 0);
 				boardOutline = RoundedRectangle(SCREEN_WIDTH - margin - boardWidth, 0 + margin,
 					boardWidth, boardHeight, 10, darkGray, 5, sf::Color::Black);
 				window.draw(boardOutline);
 				// draw the roundtrack
 				sf::ConvexShape roundTrackFrame;
-				float roundTrackHeight = 163.0 * ((double)SCREEN_WIDTH / (double)DEFAULT_SCREEN_WIDTH);
+				double roundTrackHeight = 163.0 * ((double)SCREEN_HEIGHT / (double)DEFAULT_SCREEN_HEIGHT);
 				roundTrackFrame = RoundedRectangle(SCREEN_WIDTH - margin - boardWidth, 0 + boardHeight + 2.0 * margin,
 					boardWidth, roundTrackHeight, 10, darkGray, 5, sf::Color::Black);
 				window.draw(roundTrackFrame);
 				for (int d = 0; d < 10; d++) {
-					float roundTrackDieX, roundTrackDieY, roundTrackDieSize;
+					double roundTrackDieX, roundTrackDieY, roundTrackDieSize;
 					roundTrackDieSize = roundTrackHeight / 2.6;
 					sf::Color roundTrackDieOutlineColor = mediumGray;
 					Die roundTrackDie;
@@ -451,7 +448,7 @@ int main() {
 					drawDie(roundTrackDie, roundTrackDieSize, roundTrackDieX, roundTrackDieY, roundTrackDieOutlineColor, Die(), &window);
 				}
 				std::vector <int> chosenDie = drawBoard(players[currentPlayer - 1].getBoard().getDice(), &window, boardOutline, dicePool.getDie(selectedDieIndex));
-				if (chosenDie.size() == 2) { // if die has been clicked (place die in board)
+				if (chosenDie.size() == 2) { // if die has been clicked, place die in the board
 					players[currentPlayer - 1].setDieInBoard(chosenDie[0], chosenDie[1], dicePool.getDie(selectedDieIndex));
 					dicePool.removeDie(selectedDieIndex);
 					dicePoolShapes.erase(dicePoolShapes.begin() + selectedDieIndex);
@@ -484,18 +481,11 @@ int main() {
 				currentPlayerText.setPosition(SCREEN_WIDTH - margin * 1.4 - boardWidth / 1.5, 0 - margin * 2.8 + boardHeight);
 				window.draw(currentPlayerText);
 				sf::ConvexShape objectiveCards[3];
-				float objectiveCardWidth = 290.0 * ((double)SCREEN_WIDTH / (double)DEFAULT_SCREEN_WIDTH);
-				float objectiveCardHeight = 181.0 * ((double)SCREEN_WIDTH / (double)DEFAULT_SCREEN_WIDTH);
+				double objectiveCardWidth = 290.0 * ((double)SCREEN_WIDTH / (double)DEFAULT_SCREEN_WIDTH);
+				double objectiveCardHeight = 181.0 * ((double)SCREEN_HEIGHT / (double)DEFAULT_SCREEN_HEIGHT);
 				objectiveCards[0] = RoundedRectangle(SCREEN_WIDTH - 2 * margin - boardWidth - objectiveCardWidth, 0 + margin, objectiveCardWidth, objectiveCardHeight, 10, darkGray, 5, sf::Color::Black);
 				objectiveCards[1] = RoundedRectangle(SCREEN_WIDTH - 2 * margin - boardWidth - objectiveCardWidth, 0 + 2 * margin + objectiveCardHeight, objectiveCardWidth, objectiveCardHeight, 10, darkGray, 5, sf::Color::Black);
 				objectiveCards[2] = RoundedRectangle(SCREEN_WIDTH - 2 * margin - boardWidth - objectiveCardWidth, 0 + 3 * margin + 2 * objectiveCardHeight, objectiveCardWidth, objectiveCardHeight, 10, darkGray, 5, sf::Color::Black);
-				/*sf::ConvexShape toolCards[3];
-				toolCards[0] = RoundedRectangle(SCREEN_WIDTH - 3 * margin - boardWidth - 2 * objectiveCardWidth, 0 + margin, objectiveCardWidth, objectiveCardHeight, 10, beige, 5, sf::Color::Black);
-				toolCards[1] = RoundedRectangle(SCREEN_WIDTH - 3 * margin - boardWidth - 2 * objectiveCardWidth, 0 + 2 * margin + objectiveCardHeight, objectiveCardWidth, objectiveCardHeight, 10, beige, 5, sf::Color::Black);
-				toolCards[2] = RoundedRectangle(SCREEN_WIDTH - 3 * margin - boardWidth - 2 * objectiveCardWidth, 0 + 3 * margin + 2 * objectiveCardHeight, objectiveCardWidth, objectiveCardHeight, 10, beige, 5, sf::Color::Black);*/
-				//window.draw(toolCards[0]);
-				//window.draw(toolCards[1]);
-				//window.draw(toolCards[2]);
 				sf::Text objectiveCardNames[3];
 				sf::Text objectiveCardDescriptions[3];
 				sf::Text objectiveCardPoints[3];
@@ -547,17 +537,18 @@ int main() {
 					window.draw(objectiveCardPoints[i]);
 				}
 				sf::ConvexShape draftPool;
-				float draftPoolWidth = 300.0 * ((double)SCREEN_WIDTH / (double)DEFAULT_SCREEN_WIDTH);
-				float draftPoolHeight = 584.0 * ((double)SCREEN_WIDTH / (double)DEFAULT_SCREEN_WIDTH);
+				double draftPoolWidth = 300.0 * ((double)SCREEN_WIDTH / (double)DEFAULT_SCREEN_WIDTH);
+				double draftPoolHeight = 584.0 * ((double)SCREEN_HEIGHT / (double)DEFAULT_SCREEN_HEIGHT);
 				draftPool = RoundedRectangle(0 + margin, 0 + margin, draftPoolWidth, draftPoolHeight, 10, darkGray, 5, sf::Color::Black);
 				window.draw(draftPool);
 				sf::RectangleShape draftPoolOutline; // used for setting the position of the dice, don't draw
-				float diceMargin = margin * 1.75;
+				double diceMargin = margin * 1.75;
 				draftPoolOutline.setPosition(0 + diceMargin, 0 + diceMargin);
 				draftPoolOutline.setSize(sf::Vector2f(draftPool.getGlobalBounds().width - diceMargin * 1.25, draftPool.getGlobalBounds().height - diceMargin * 1.25));
+				int tries = 0;
 				for (int d = 0; d < dicePool.size(); d++) { // draw each die in the draft pool
-					float diceSize = 65.0 * ((double)SCREEN_WIDTH / (double)DEFAULT_SCREEN_WIDTH);
-					float x, y;
+					double diceSize = 65.0 * ((double)SCREEN_WIDTH / (double)DEFAULT_SCREEN_WIDTH);
+					double x, y;
 					if (dicePoolShapes.size() != dicePool.size()) { // add dice to draft pool as needed
 						std::uniform_int_distribution<int> diceDistX(0, (int)draftPoolOutline.getGlobalBounds().width - (int)diceSize);
 						std::uniform_int_distribution<int> diceDistY(0, (int)draftPoolOutline.getGlobalBounds().height - (int)diceSize);
@@ -570,24 +561,28 @@ int main() {
 						for (int i = 0; i < dicePoolShapes.size(); i++) { // make sure the dice doesn't intersect
 							sf::RectangleShape r = dicePoolShapes[i];
 							sf::FloatRect checkGlobal = r.getGlobalBounds();
-							checkGlobal.left *= ((double)SCREEN_WIDTH / (double)DEFAULT_SCREEN_WIDTH);
-							checkGlobal.top *= ((double)SCREEN_WIDTH / (double)DEFAULT_SCREEN_WIDTH);
-							checkGlobal.width *= ((double)SCREEN_WIDTH / (double)DEFAULT_SCREEN_WIDTH);
-							checkGlobal.height *= ((double)SCREEN_WIDTH / (double)DEFAULT_SCREEN_WIDTH);
-							checkGlobal.left -= 9.0;
-							checkGlobal.top -= 9.0;
-							checkGlobal.width += 18.0;
-							checkGlobal.height += 18.0;
+							checkGlobal.left *= ((float)SCREEN_WIDTH / (float)DEFAULT_SCREEN_WIDTH);
+							checkGlobal.top *= ((float)SCREEN_WIDTH / (float)DEFAULT_SCREEN_WIDTH);
+							checkGlobal.width *= ((float)SCREEN_WIDTH / (float)DEFAULT_SCREEN_WIDTH);
+							checkGlobal.height *= ((float)SCREEN_WIDTH / (float)DEFAULT_SCREEN_WIDTH);
+							checkGlobal.left -= (float)9.0 * ((float)SCREEN_WIDTH / (float)DEFAULT_SCREEN_WIDTH);
+							checkGlobal.top -= (float)9.0 * ((float)SCREEN_WIDTH / (float)DEFAULT_SCREEN_WIDTH);
+							checkGlobal.width += (float)18.0 * ((float)SCREEN_WIDTH / (float)DEFAULT_SCREEN_WIDTH);
+							checkGlobal.height += (float)18.0 * ((float)SCREEN_WIDTH / (float)DEFAULT_SCREEN_WIDTH);
 							if (rectangle.getGlobalBounds().intersects(checkGlobal)) {
 								intersects = true;
 								break;
 							}
 						}
 						if (!intersects) {
-							dicePoolShapes.push_back(drawDie(dicePool.getDie(d), diceSize, x / ((double)SCREEN_WIDTH / (double)DEFAULT_SCREEN_WIDTH), y / ((double)SCREEN_WIDTH / (double)DEFAULT_SCREEN_WIDTH), mediumGray, Die(), &window));
+							dicePoolShapes.push_back(drawDie(dicePool.getDie(d), diceSize / ((double)SCREEN_WIDTH / (double)DEFAULT_SCREEN_WIDTH), x / ((double)SCREEN_WIDTH / (double)DEFAULT_SCREEN_WIDTH), y / ((double)SCREEN_WIDTH / (double)DEFAULT_SCREEN_WIDTH), mediumGray, Die(), NULL));
 						}
 						else { // redo if it intersects
-							d--;
+							d--, tries++;
+							if (tries > 20) {
+								dicePoolShapes.clear();
+								tries = 0;
+							}
 						}
 					}
 					else { // if the dice have already been added to the draft pool
@@ -623,26 +618,25 @@ int main() {
 			}
 		}
 		else { // the game is over - tally up points and declare the winner
-			// (\"id,score,isWinner\", ...) // int id, int score, bool isWinner (there can be two+ winners if there's a tie)
 			*client.getOutBoundStream() << "(upd,)";
-			float playerScoreMargin = SCREEN_WIDTH / 40.0;
-			float playerScoreWidth = (SCREEN_WIDTH / 4.0) - playerScoreMargin;
-			float playerScoreHeight = SCREEN_HEIGHT / 1.75;
-			float totalWidth = playerCount * (playerScoreWidth + playerScoreMargin) - playerScoreMargin; // Calculate the total width of all the shapes
-			float startX = (SCREEN_WIDTH - totalWidth) / 2.0; // Calculate the starting x-position to center the shapes
+			double playerScoreMargin = SCREEN_WIDTH / 40.0;
+			double playerScoreWidth = (SCREEN_WIDTH / 4.0) - playerScoreMargin;
+			double playerScoreHeight = SCREEN_HEIGHT / 1.75;
+			double totalWidth = playerCount * (playerScoreWidth + playerScoreMargin) - playerScoreMargin; // Calculate the total width of all the shapes
+			double startX = (SCREEN_WIDTH - totalWidth) / 2.0; // Calculate the starting x-position to center the shapes
 			//players.at(0).setFrame();
 			for (int i = 0; i < playerCount; i++) {
 				// add up from all three public objectives
 				players.at(i).getTotalPoints(selectedPublicObjectives);
 				// draw the outline of the scores
 				sf::ConvexShape playerScoreOutline;
-				float playerScoreX = startX + (playerScoreWidth + playerScoreMargin) * i;
-				float playerScoreY = playerScoreMargin / 2.0;
+				double playerScoreX = startX + (playerScoreWidth + playerScoreMargin) * i;
+				double playerScoreY = playerScoreMargin / 2.0;
 				playerScoreOutline = RoundedRectangle(playerScoreX, playerScoreY, playerScoreWidth, playerScoreHeight, 10, players.at(i).getPrivateObjective(), 2, sf::Color::Black);
 				window.draw(playerScoreOutline);
 				// draw player name (#)
 				sf::Text playerText;
-				float playerTextX = playerScoreX + playerScoreWidth / 2.0;
+				double playerTextX = playerScoreX + playerScoreWidth / 2.0;
 				playerText.setFont(font);
 				playerText.setFillColor(sf::Color::Black);
 				playerText.setStyle(sf::Text::Bold);
@@ -651,14 +645,14 @@ int main() {
 				playerText.setOrigin(playerText.getLocalBounds().width / 2, 0);
 				playerText.setPosition(playerTextX, playerScoreY + playerScoreHeight / 30.0);
 				window.draw(playerText);
-				float textSize = 18.0;
-				float pointsMarginDivider = 1.35;
+				double textSize = 18.0;
+				double pointsMarginDivider = 1.35;
 				// draw public objective points gained
 				std::vector<sf::Text> publicObjectiveNames;
 				std::vector<sf::Text> publicObjectivePoints;
 				for (int p = 0; p < selectedPublicObjectives.size(); p++) { // draw the objective card text
 					publicObjectiveNames.push_back(sf::Text());
-					float privateObjectiveY = 0.0;
+					double privateObjectiveY = 0.0;
 					publicObjectiveNames[p].setFont(font);
 					publicObjectiveNames[p].setStyle(sf::Text::Bold);
 					publicObjectiveNames[p].setLetterSpacing(0.48);
@@ -688,7 +682,7 @@ int main() {
 				// draw private objective points gained
 				sf::Text privateObjectiveText;
 				sf::Text privateObjectivePoints;
-				float privateObjectiveY = publicObjectivePoints[selectedPublicObjectives.size() - 1].getGlobalBounds().top + playerScoreMargin;
+				double privateObjectiveY = publicObjectivePoints[selectedPublicObjectives.size() - 1].getGlobalBounds().top + playerScoreMargin;
 				privateObjectiveText.setFont(font);
 				privateObjectiveText.setStyle(sf::Text::Bold);
 				privateObjectiveText.setLetterSpacing(0.48);
@@ -708,7 +702,7 @@ int main() {
 				window.draw(privateObjectivePoints);
 				// draw open spaces points lost
 				sf::Text openSpacesText, openSpacesPoints;
-				float openSpacesY = privateObjectiveText.getGlobalBounds().top + playerScoreMargin;
+				double openSpacesY = privateObjectiveText.getGlobalBounds().top + playerScoreMargin;
 				openSpacesText.setFont(font);
 				openSpacesText.setStyle(sf::Text::Bold);
 				openSpacesText.setLetterSpacing(0.48);
@@ -728,7 +722,7 @@ int main() {
 				window.draw(openSpacesPoints);
 				// draw total points
 				sf::Text totalPointsText, totalPointsPoints;
-				float totalPointsY = openSpacesText.getGlobalBounds().top + playerScoreMargin;
+				double totalPointsY = openSpacesText.getGlobalBounds().top + playerScoreMargin;
 				totalPointsText.setFont(font);
 				totalPointsText.setStyle(sf::Text::Bold);
 				totalPointsText.setLetterSpacing(0.4);
@@ -785,6 +779,7 @@ int main() {
 						realWinners.push_back(i + 1);
 					}
 				}
+				winners = realWinners;
 				if (realWinners.size() > 1) {
 					winnerString = "Players ";
 					for (int o = 0; o < realWinners.size(); o++) {
@@ -804,7 +799,14 @@ int main() {
 				winnerString = "Player " + std::to_string(winners.at(0)) + " WINS!";
 				//std::cout << "There is no tie between the winners." << std::endl;
 			}
-
+			std::vector<bool> boolWinners{ false, false, false, false };
+			for (int b = 0; b < 4; b++) {
+				for (int r = 0; r < winners.size(); r++) {
+					if (b + 1 == winners.at(r)) {
+						boolWinners.at(b) = true;
+					}
+				}
+			}
 			sf::Text winnerText;
 			winnerText.setFont(font);
 			winnerText.setFillColor(sf::Color::Black);
@@ -812,7 +814,7 @@ int main() {
 			winnerText.setCharacterSize(60.0 * ((double)SCREEN_WIDTH / (double)DEFAULT_SCREEN_WIDTH));
 			winnerText.setString(winnerString);
 			winnerText.setOrigin(winnerText.getLocalBounds().width / 2, 0);
-			winnerText.setPosition(SCREEN_WIDTH / 2.0, SCREEN_HEIGHT - margin * 2.0);
+			winnerText.setPosition(SCREEN_WIDTH / 2.0, SCREEN_HEIGHT - 130.0 * ((double)SCREEN_HEIGHT / (double)DEFAULT_SCREEN_HEIGHT));
 			window.draw(winnerText);
 			sf::Text playAgain;
 			playAgain.setFont(font);
@@ -821,14 +823,37 @@ int main() {
 			playAgain.setCharacterSize(20.0 * ((double)SCREEN_WIDTH / (double)DEFAULT_SCREEN_WIDTH));
 			playAgain.setString("Right-click to exit the game");
 			playAgain.setOrigin(playAgain.getLocalBounds().width / 2, 0);
-			playAgain.setPosition(SCREEN_WIDTH / 2.0, SCREEN_HEIGHT - margin / 2.5);
+			playAgain.setPosition(SCREEN_WIDTH / 2.0, SCREEN_HEIGHT - 40.0 * ((double)SCREEN_HEIGHT / (double)DEFAULT_SCREEN_HEIGHT));
 			window.draw(playAgain);
+			if (winnerHasSent == false) {
+				std::string toSend = "(pst,";
+				for (int p = 1; p < 5; p++) { // must always send as if there are four players
+					if (p > playerCount) {
+						toSend.append("EMPTY,0,false,");
+					}
+					else {
+						toSend.append(std::to_string(p) + ",");
+						toSend.append(std::to_string(players.at(p - 1).getTotalPoints()) + ",");
+						if (boolWinners.at(p - 1) == false) { // to_string turns it into 1 and 0
+							toSend.append("false,");
+						}
+						else {
+							toSend.append("true,");
+						}
+					}
+				}
+				toSend.append(")");
+				*client.getOutBoundStream() << toSend;
+				winnerHasSent = true;
+			}
 			if (sf::Mouse::isButtonPressed(sf::Mouse::Right)) { // right-click to exit the game
+				winnerHasSent = false;
 				playerCount = 0;
 				currentPlayer = 1;
 				currentTurn = 1;
 				playGame = 0;
 				currentPlayerIsDone = 0;
+				break;
 				Sleep(sleepTime);
 			}
 		}
