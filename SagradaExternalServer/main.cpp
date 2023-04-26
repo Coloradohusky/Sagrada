@@ -6,7 +6,6 @@
 int main(void) 
 {
 	Server svr(46580);
-	std::thread serverThread(&Server::start, &svr);
-	serverThread.join();
+	svr.start();
 	return 0;
 }
